@@ -48,5 +48,5 @@ jobs:
       - run: composer lint
       - run: composer analyse
       - run: npm run lint
-      - run: composer test
       - run: npm run build
+      - run: composer test
