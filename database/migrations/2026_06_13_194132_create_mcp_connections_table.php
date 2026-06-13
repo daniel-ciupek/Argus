@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('status');   // McpStatus enum cast in model
             $table->jsonb('meta')->nullable();
             $table->timestamps();
+
+            $table->index('agent_id');
         });
     }
 

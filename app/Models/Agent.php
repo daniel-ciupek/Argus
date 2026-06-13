@@ -60,4 +60,16 @@ class Agent extends Model
     {
         return $this->hasMany(McpConnection::class);
     }
+
+    /** @return HasMany<Budget, $this> */
+    public function budgets(): HasMany
+    {
+        return $this->hasMany(Budget::class);
+    }
+
+    /** @return HasMany<UsageRecord, $this> */
+    public function usageRecords(): HasMany
+    {
+        return $this->hasMany(UsageRecord::class);
+    }
 }
