@@ -1,8 +1,21 @@
-/**
- * Frontend bootstrap — runs before the Inertia app is created (imported by app.ts).
- *
- * Laravel 13 no longer ships a default bootstrap file, but Breeze's entrypoint still
- * imports it. Real-time setup (Laravel Echo + Reverb) will be wired up here in Faza 4.
- */
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 
-export {};
+declare global {
+    interface Window {
+        Pusher: typeof Pusher;
+        Echo: Echo<'reverb'>;
+    }
+}
+
+window.Pusher = Pusher;
+
+window.Echo = new Echo({
+    broadcaster: 'reverb',
+    key: import.meta.env.VITE_REVERB_APP_KEY as string,
+    wsHost: import.meta.env.VITE_REVERB_HOST as string,
+    wsPort: Number(import.meta.env.VITE_REVERB_PORT ?? 8080),
+    wssPort: Number(import.meta.env.VITE_REVERB_PORT ?? 443),
+    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'http') === 'https',
+    enabledTransports: ['ws', 'wss'],
+});

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\EventType;
+use App\Events\EventReceived;
 use App\Models\Agent;
 use App\Models\Event;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,7 +25,7 @@ class ProcessEventJob implements ShouldQueue
 
     public function handle(): void
     {
-        Event::create([
+        $event = Event::create([
             'agent_id' => $this->agent->id,
             'type' => EventType::from($this->data['type']),
             'level' => $this->data['level'],
@@ -34,5 +35,7 @@ class ProcessEventJob implements ShouldQueue
         ]);
 
         $this->agent->update(['last_seen_at' => now()]);
+
+        broadcast(new EventReceived($event));
     }
 }

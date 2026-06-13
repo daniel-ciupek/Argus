@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
@@ -33,6 +35,10 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'agents' => $request->user()?->agents()
+                    ->where('is_active', true)
+                    ->select(['id', 'name', 'slug'])
+                    ->get(),
             ],
         ];
     }
