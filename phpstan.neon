@@ -1,0 +1,15 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+    tmpDir: storage/framework/cache/phpstan
+    ignoreErrors:
+        # Stockowy kontroler Breeze: $request->user() jest typowany jako User|null,
+        # a event Verified oczekuje MustVerifyEmail. Weryfikacja e-mail nie jest jeszcze
+        # włączona — do rewizji w Fazie 8 (hardening), jeśli włączymy MustVerifyEmail.
+        -
+            message: '#Parameter \#1 \$user of class Illuminate\\Auth\\Events\\Verified constructor expects#'
+            path: app/Http/Controllers/Auth/VerifyEmailController.php

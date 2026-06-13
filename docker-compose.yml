@@ -11,11 +11,16 @@ x-app: &app
     dockerfile: Dockerfile
     target: dev          # multi-stage: zatrzymujemy się na warstwie dev (z narzędziami)
   image: hermes-cockpit:dev
+  # Kontener działa jako użytkownik hosta (domyślnie 1000:1000), żeby pliki tworzone
+  # przez aplikację (logi, skompilowane widoki, cache) NIE były własnością roota.
+  user: "${UID:-1000}:${GID:-1000}"
   volumes:
     - ./:/var/www/html   # bind mount: kod z hosta widoczny w kontenerze na żywo
-  env_file:
-    - path: .env       # required:false → skeleton waliduje się także bez .env (Faza 0);
-      required: false  #   realne wartości pojawią się po `cp .env.example .env` w Fazie 1
+  environment:
+    HOME: /tmp           # zapisywalny HOME dla nie-rootowego usera (composer/artisan)
+  # UWAGA: świadomie NIE używamy `env_file: .env`. Laravel sam wczytuje .env z dysku,
+  # a wstrzykiwanie .env do środowiska kontenera zatruwało $_SERVER i nadpisywało
+  # konfigurację testową z phpunit.xml (testy biegłyby na bazie dev zamiast `testing`).
   depends_on:
     postgres:
       condition: service_healthy
