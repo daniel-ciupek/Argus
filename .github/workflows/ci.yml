@@ -1,22 +1,32 @@
 name: CI
 on:
   push:
-    branches: [ main ]
+    branches: [ dev, main ]
   pull_request:
 
 jobs:
   quality:
     runs-on: ubuntu-latest
+    # Realne zmienne środowiskowe joba → trafiają do $_SERVER, więc są autorytatywne
+    # dla Laravela (spójne z phpunit.xml force=true). NIE ustawiamy APP_ENV — phpunit
+    # wymusi `testing`; brak APP_ENV w $_SERVER chroni przed nadpisaniem env testowego.
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: testing
+      DB_USERNAME: hermes
+      DB_PASSWORD: secret
     services:
       postgres:
         image: postgres:16
         env:
           POSTGRES_DB: testing
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: hermes
+          POSTGRES_PASSWORD: secret
         ports: [ "5432:5432" ]
         options: >-
-          --health-cmd="pg_isready -U postgres" --health-interval=10s
+          --health-cmd="pg_isready -U hermes" --health-interval=10s
           --health-timeout=5s --health-retries=5
       redis:
         image: redis:7
