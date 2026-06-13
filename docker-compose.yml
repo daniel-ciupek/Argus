@@ -1,0 +1,97 @@
+# Środowisko deweloperskie Hermes Cockpit.
+# `docker compose up -d` stawia całość. Szkielet Fazy 0 — dopinany w Fazie 1,
+# gdy istnieje już aplikacja Laravel (artisan, composer.json, package.json).
+
+# ── Kotwica YAML: wspólna konfiguracja dla kontenerów opartych o obraz aplikacji ──
+# app, reverb i queue używają TEGO SAMEGO obrazu (zbudowanego z ./Dockerfile),
+# różnią się tylko komendą startową. Dzięki kotwicy nie powielamy konfiguracji.
+x-app: &app
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: dev          # multi-stage: zatrzymujemy się na warstwie dev (z narzędziami)
+  image: hermes-cockpit:dev
+  volumes:
+    - ./:/var/www/html   # bind mount: kod z hosta widoczny w kontenerze na żywo
+  env_file:
+    - path: .env       # required:false → skeleton waliduje się także bez .env (Faza 0);
+      required: false  #   realne wartości pojawią się po `cp .env.example .env` w Fazie 1
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks:
+    - hermes
+
+services:
+  # ── Aplikacja: serwer HTTP Laravela (dev: php artisan serve) ──
+  app:
+    <<: *app
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    ports:
+      - "8000:8000"
+
+  # ── WebSockets: Laravel Reverb (broadcasting zdarzeń na żywo) ──
+  reverb:
+    <<: *app
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8080:8080"
+
+  # ── Worker kolejki: przetwarza Joby (ProcessEventJob, AggregateUsageJob) ──
+  queue:
+    <<: *app
+    command: php artisan queue:work --tries=3 --timeout=90
+    ports: []            # worker nie wystawia portu
+
+  # ── Baza danych: PostgreSQL 16 ──
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-hermes}
+      POSTGRES_USER: ${DB_USERNAME:-hermes}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # named volume: dane przeżywają restart
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-hermes} -d ${DB_DATABASE:-hermes}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hermes
+
+  # ── Cache + kolejki: Redis 7 ──
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hermes
+
+  # ── Frontend dev server: Vite (HMR dla Vue) ──
+  vite:
+    image: node:20-alpine
+    working_dir: /var/www/html
+    command: sh -c "npm install && npm run dev -- --host"
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "5173:5173"
+    networks:
+      - hermes
+
+volumes:
+  pgdata:                # trwałe dane PostgreSQL
+
+networks:
+  hermes:
+    driver: bridge

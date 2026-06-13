@@ -1,0 +1,44 @@
+# VCS & tooling meta
+.git
+.gitignore
+.gitattributes
+.github
+.claude
+
+# Dependencies (installed inside the image during build)
+/vendor
+/node_modules
+
+# Build artifacts
+/public/build
+/public/hot
+
+# Runtime & secrets — never bake these into the image
+/storage/*.key
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+id_rsa
+*credentials*.json
+
+# Local data
+*.log
+*.sqlite
+*.sql
+*.dump
+.DS_Store
+
+# Things not needed in a runtime image
+docker-compose*.yml
+Dockerfile
+.dockerignore
+README.md
+tests
+.phpunit.result.cache
+.phpunit.cache
