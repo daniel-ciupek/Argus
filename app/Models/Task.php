@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
+ * @property Agent $agent
  * @property TaskStatus $status
  * @property Carbon|null $last_run_at
  * @property Carbon|null $next_run_at

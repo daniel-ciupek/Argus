@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property Budget $budget
  * @property Carbon $triggered_at
  * @property Carbon|null $acknowledged_at
  */

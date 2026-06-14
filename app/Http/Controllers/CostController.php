@@ -20,7 +20,9 @@ class CostController extends Controller
 
     public function index(Request $request): Response
     {
-        $agentIds = $request->user()->agents()->pluck('id');
+        $user = $request->user();
+        assert($user !== null);
+        $agentIds = $user->agents()->pluck('id');
         $since = now()->subDays(self::WINDOW_DAYS - 1)->startOfDay();
 
         // Base query builder (stdClass rows) scoped to the user's agents and window.
@@ -65,7 +67,7 @@ class CostController extends Controller
      * Daily cost/token buckets, oldest first. Days without usage are omitted;
      * the frontend zero-fills the timeline for the chart.
      *
-     * @return list<array{date: string, cost: string, tokens: int}>
+     * @return array<int, array{date: string, cost: string, tokens: int}>
      */
     private function daily(Builder $query): array
     {
@@ -87,7 +89,7 @@ class CostController extends Controller
     /**
      * Cost/token breakdown per model, most expensive first.
      *
-     * @return list<array{provider: string, name: string, cost: string, tokens: int, calls: int}>
+     * @return array<int, array{provider: string, name: string, cost: string, tokens: int, calls: int}>
      */
     private function perModel(Builder $query): array
     {

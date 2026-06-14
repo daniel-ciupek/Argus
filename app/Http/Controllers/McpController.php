@@ -15,7 +15,9 @@ class McpController extends Controller
 {
     public function index(Request $request): Response
     {
-        $agentIds = $request->user()->agents()->pluck('id');
+        $user = $request->user();
+        assert($user !== null);
+        $agentIds = $user->agents()->pluck('id');
 
         $query = McpConnection::query()
             ->whereIn('agent_id', $agentIds)

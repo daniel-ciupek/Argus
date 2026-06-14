@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property Agent $agent
  * @property McpStatus $status
  * @property array<string, mixed>|null $meta
  */

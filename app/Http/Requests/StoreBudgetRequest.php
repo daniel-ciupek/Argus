@@ -20,11 +20,14 @@ class StoreBudgetRequest extends FormRequest
      */
     public function rules(): array
     {
+        $user = $this->user();
+        assert($user !== null);
+
         return [
             'agent_id' => [
                 'required',
                 'integer',
-                Rule::exists('agents', 'id')->where('user_id', $this->user()->id),
+                Rule::exists('agents', 'id')->where('user_id', $user->id),
             ],
             'period' => ['required', Rule::enum(BudgetPeriod::class)],
             'limit_amount' => ['required', 'numeric', 'min:0.01', 'max:99999'],
