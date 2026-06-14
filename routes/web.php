@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CostController;
+use App\Http\Controllers\McpController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Foundation\Application;
@@ -29,7 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/logs', fn () => Inertia::render('Logs'))->name('logs');
     Route::get('/costs', [CostController::class, 'index'])->name('costs');
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks');
-    Route::get('/mcp', fn () => Inertia::render('Mcp'))->name('mcp');
+    Route::get('/mcp', [McpController::class, 'index'])->name('mcp');
     Route::get('/settings', fn () => Inertia::render('Settings'))->name('settings');
 });
 

@@ -20,4 +20,8 @@ Route::middleware(['throttle:60,1'])
         Route::post('{agent:slug}/tasks', [IngestController::class, 'task'])
             ->middleware(VerifyHmacSignature::class)
             ->where('agent', '[a-z0-9\-]+');
+
+        Route::post('{agent:slug}/mcp', [IngestController::class, 'mcp'])
+            ->middleware(VerifyHmacSignature::class)
+            ->where('agent', '[a-z0-9\-]+');
     });
