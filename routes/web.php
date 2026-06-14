@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,7 +28,7 @@ Route::middleware('auth')->group(function () {
     // Raw dashboard sections — placeholder pages, built out in later phases.
     Route::get('/logs', fn () => Inertia::render('Logs'))->name('logs');
     Route::get('/costs', [CostController::class, 'index'])->name('costs');
-    Route::get('/tasks', fn () => Inertia::render('Tasks'))->name('tasks');
+    Route::get('/tasks', [TaskController::class, 'index'])->name('tasks');
     Route::get('/mcp', fn () => Inertia::render('Mcp'))->name('mcp');
     Route::get('/settings', fn () => Inertia::render('Settings'))->name('settings');
 });
