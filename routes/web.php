@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CostController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +26,7 @@ Route::middleware('auth')->group(function () {
 
     // Raw dashboard sections — placeholder pages, built out in later phases.
     Route::get('/logs', fn () => Inertia::render('Logs'))->name('logs');
-    Route::get('/costs', fn () => Inertia::render('Costs'))->name('costs');
+    Route::get('/costs', [CostController::class, 'index'])->name('costs');
     Route::get('/tasks', fn () => Inertia::render('Tasks'))->name('tasks');
     Route::get('/mcp', fn () => Inertia::render('Mcp'))->name('mcp');
     Route::get('/settings', fn () => Inertia::render('Settings'))->name('settings');

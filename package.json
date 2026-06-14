@@ -31,6 +31,8 @@
         "vue-tsc": "^2.0.24"
     },
     "dependencies": {
-        "pinia": "^3.0.4"
+        "apexcharts": "^5.15.0",
+        "pinia": "^3.0.4",
+        "vue3-apexcharts": "^1.11.1"
     }
 }
