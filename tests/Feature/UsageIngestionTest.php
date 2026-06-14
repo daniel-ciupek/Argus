@@ -2,12 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Enums\BudgetPeriod;
 use App\Jobs\AggregateUsageJob;
 use App\Models\Agent;
 use App\Models\AiModel;
+use App\Models\Alert;
+use App\Models\Budget;
 use App\Models\Task;
 use App\Models\UsageRecord;
 use App\Models\User;
+use App\Services\BudgetGuard;
 use App\Services\UsageCalculator;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\TestResponse;
@@ -117,7 +121,10 @@ it('accepts a task that belongs to the same agent', function (): void {
 it('stores a usage record with cost computed from the catalogue', function (): void {
     $payload = makeUsagePayload(['input_tokens' => 1000, 'output_tokens' => 500]);
 
-    (new AggregateUsageJob($this->agent, $payload))->handle(app(UsageCalculator::class));
+    (new AggregateUsageJob($this->agent, $payload))->handle(
+        app(UsageCalculator::class),
+        app(BudgetGuard::class),
+    );
 
     $record = UsageRecord::where('agent_id', $this->agent->id)->first();
 
@@ -131,4 +138,22 @@ it('stores a usage record with cost computed from the catalogue', function (): v
 
     $this->agent->refresh();
     expect($this->agent->last_seen_at)->not->toBeNull();
+});
+
+it('triggers an alert when usage causes a budget to be exceeded', function (): void {
+    $budget = Budget::factory()->for($this->agent)->create([
+        'period' => BudgetPeriod::Daily,
+        'limit_amount' => '0.0050',
+        'currency' => 'USD',
+    ]);
+
+    // 1000 * 0.003/1000 + 500 * 0.006/1000 = 0.006 → exceeds 0.005 limit
+    $payload = makeUsagePayload(['input_tokens' => 1000, 'output_tokens' => 500]);
+
+    (new AggregateUsageJob($this->agent, $payload))->handle(
+        app(UsageCalculator::class),
+        app(BudgetGuard::class),
+    );
+
+    expect(Alert::where('budget_id', $budget->id)->count())->toBe(1);
 });

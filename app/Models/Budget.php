@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property BudgetPeriod $period
+ * @property string $limit_amount
+ */
 class Budget extends Model
 {
     /** @use HasFactory<BudgetFactory> */

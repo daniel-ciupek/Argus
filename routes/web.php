@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AlertController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CostController;
 use App\Http\Controllers\McpController;
 use App\Http\Controllers\ProfileController;
@@ -32,6 +34,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks');
     Route::get('/mcp', [McpController::class, 'index'])->name('mcp');
     Route::get('/settings', fn () => Inertia::render('Settings'))->name('settings');
+
+    Route::get('/budgets', [BudgetController::class, 'index'])->name('budgets');
+    Route::post('/budgets', [BudgetController::class, 'store'])->name('budgets.store');
+    Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
+    Route::patch('/alerts/{alert}/acknowledge', [AlertController::class, 'acknowledge'])->name('alerts.acknowledge');
 });
 
 require __DIR__.'/auth.php';

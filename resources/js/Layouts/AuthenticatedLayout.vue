@@ -15,6 +15,7 @@ const sidebarLinks: { label: string; route: string }[] = [
     { label: 'Costs', route: 'costs' },
     { label: 'Tasks', route: 'tasks' },
     { label: 'MCP', route: 'mcp' },
+    { label: 'Budgets', route: 'budgets' },
     { label: 'Settings', route: 'settings' },
 ];
 </script>

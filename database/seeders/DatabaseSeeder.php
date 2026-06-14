@@ -150,20 +150,37 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // ── Budget + alert ─────────────────────────────────────────────────
-        $budget = Budget::create([
+        // ── Budgets + alerts ───────────────────────────────────────────────
+        $monthlyBudget = Budget::create([
             'agent_id' => $agent->id,
             'period' => BudgetPeriod::Monthly,
             'limit_amount' => '50.0000',
             'currency' => 'USD',
         ]);
 
+        $dailyBudget = Budget::create([
+            'agent_id' => $agent->id,
+            'period' => BudgetPeriod::Daily,
+            'limit_amount' => '5.0000',
+            'currency' => 'USD',
+        ]);
+
+        // Unacknowledged alert on monthly budget (visible warning in UI).
         Alert::create([
-            'budget_id' => $budget->id,
-            'amount' => '42.5000',
+            'budget_id' => $monthlyBudget->id,
+            'amount' => '52.3400',
             'channel' => 'database',
             'triggered_at' => now()->subHours(2),
             'acknowledged_at' => null,
+        ]);
+
+        // Already-acknowledged alert on daily budget (shows historical record).
+        Alert::create([
+            'budget_id' => $dailyBudget->id,
+            'amount' => '6.1200',
+            'channel' => 'database',
+            'triggered_at' => now()->subDays(1)->subHours(3),
+            'acknowledged_at' => now()->subDays(1),
         ]);
     }
 }

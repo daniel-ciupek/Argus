@@ -7,6 +7,7 @@ namespace App\Jobs;
 use App\Models\Agent;
 use App\Models\AiModel;
 use App\Models\UsageRecord;
+use App\Services\BudgetGuard;
 use App\Services\UsageCalculator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -28,7 +29,7 @@ class AggregateUsageJob implements ShouldQueue
         public readonly array $data,
     ) {}
 
-    public function handle(UsageCalculator $calculator): void
+    public function handle(UsageCalculator $calculator, BudgetGuard $guard): void
     {
         $model = AiModel::query()
             ->where('provider', $this->data['provider'])
@@ -50,5 +51,7 @@ class AggregateUsageJob implements ShouldQueue
         ]);
 
         $this->agent->update(['last_seen_at' => now()]);
+
+        $guard->check($this->agent);
     }
 }
