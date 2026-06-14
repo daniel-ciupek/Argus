@@ -17,7 +17,7 @@ class McpStatusUpdated implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public readonly McpConnection $connection,
+        public readonly McpConnection $mcpConnection,
     ) {}
 
     /**
@@ -26,7 +26,7 @@ class McpStatusUpdated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('agent.'.$this->connection->agent_id),
+            new PrivateChannel('agent.'.$this->mcpConnection->agent_id),
         ];
     }
 
@@ -45,11 +45,11 @@ class McpStatusUpdated implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->connection->id,
-            'agent_id' => $this->connection->agent_id,
-            'name' => $this->connection->name,
-            'status' => $this->connection->status->value,
-            'meta' => $this->connection->meta,
+            'id' => $this->mcpConnection->id,
+            'agent_id' => $this->mcpConnection->agent_id,
+            'name' => $this->mcpConnection->name,
+            'status' => $this->mcpConnection->status->value,
+            'meta' => $this->mcpConnection->meta,
         ];
     }
 }

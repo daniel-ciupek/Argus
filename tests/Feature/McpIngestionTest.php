@@ -85,7 +85,7 @@ it('creates a connection on first report and stores meta', function (): void {
         ->and($connection->status)->toBe(McpStatus::Connected)
         ->and($connection->meta)->toBe(['org' => 'acme']);
 
-    Event::assertDispatched(McpStatusUpdated::class, fn ($e) => $e->connection->is($connection));
+    Event::assertDispatched(McpStatusUpdated::class, fn ($e) => $e->mcpConnection->is($connection));
 });
 
 it('updates an existing connection instead of duplicating it', function (): void {
