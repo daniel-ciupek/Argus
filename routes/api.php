@@ -6,7 +6,7 @@ use App\Http\Controllers\IngestController;
 use App\Http\Middleware\VerifyHmacSignature;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['throttle:60,1'])
+Route::middleware(['throttle:ingest'])
     ->prefix('ingest')
     ->group(function (): void {
         Route::post('{agent:slug}/events', [IngestController::class, 'event'])
