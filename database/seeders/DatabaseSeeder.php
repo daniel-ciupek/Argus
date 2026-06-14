@@ -17,6 +17,7 @@ use App\Models\McpConnection;
 use App\Models\Task;
 use App\Models\UsageRecord;
 use App\Models\User;
+use App\Services\UsageCalculator;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -27,6 +28,8 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        $usageCalculator = new UsageCalculator;
+
         // ── Demo user ──────────────────────────────────────────────────────
         $user = User::factory()->create([
             'name' => 'Demo User',
@@ -132,10 +135,6 @@ class DatabaseSeeder extends Seeder
                     $aiModel = $aiModels->random();
                     $inputTokens = rand(200, 3000);
                     $outputTokens = rand(100, 1500);
-                    $cost = (
-                        ($inputTokens / 1000) * (float) $aiModel->input_price_per_1k +
-                        ($outputTokens / 1000) * (float) $aiModel->output_price_per_1k
-                    );
 
                     UsageRecord::create([
                         'agent_id' => $agent->id,
@@ -143,8 +142,8 @@ class DatabaseSeeder extends Seeder
                         'task_id' => rand(0, 1) ? $tasks->random()->id : null,
                         'input_tokens' => $inputTokens,
                         'output_tokens' => $outputTokens,
-                        'cost' => number_format($cost, 6),
-                        'currency' => 'USD',
+                        'cost' => $usageCalculator->cost($aiModel, $inputTokens, $outputTokens),
+                        'currency' => $aiModel->currency,
                         'occurred_at' => $occurredAt,
                     ]);
                 }
