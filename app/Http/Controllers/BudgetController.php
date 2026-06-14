@@ -75,6 +75,8 @@ class BudgetController extends Controller
 
     public function store(StoreBudgetRequest $request): RedirectResponse
     {
+        $this->authorize('create', Budget::class);
+
         Budget::create([
             'agent_id' => $request->integer('agent_id'),
             'period' => BudgetPeriod::from($request->string('period')->toString()),

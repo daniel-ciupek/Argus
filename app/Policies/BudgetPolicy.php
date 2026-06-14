@@ -9,6 +9,11 @@ use App\Models\User;
 
 class BudgetPolicy
 {
+    public function create(User $user): bool
+    {
+        return true;
+    }
+
     public function delete(User $user, Budget $budget): bool
     {
         return $budget->agent?->user_id === $user->id;

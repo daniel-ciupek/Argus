@@ -31,7 +31,7 @@ class StoreBudgetRequest extends FormRequest
             ],
             'period' => ['required', Rule::enum(BudgetPeriod::class)],
             'limit_amount' => ['required', 'numeric', 'min:0.01', 'max:99999'],
-            'currency' => ['sometimes', 'string', 'size:3'],
+            'currency' => ['sometimes', 'string', 'alpha', 'size:3'],
         ];
     }
 }

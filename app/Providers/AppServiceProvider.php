@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Agent;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -28,7 +29,11 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
 
         RateLimiter::for('ingest', function (Request $request): Limit {
-            $agentSlug = (string) $request->route('agent', 'unknown');
+            $raw = $request->route('agent');
+            // ThrottleRequests runs before SubstituteBindings, so $raw is normally
+            // a plain string (the slug). Guard against it being a resolved model
+            // in case the middleware order ever changes.
+            $agentSlug = $raw instanceof Agent ? $raw->slug : (string) ($raw ?? 'unknown');
 
             return Limit::perMinute(config('app.rate_limit_ingest', 60))
                 ->by($agentSlug.'|'.$request->ip());

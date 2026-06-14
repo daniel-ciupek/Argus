@@ -28,8 +28,8 @@ class IngestUsageRequest extends FormRequest
         return [
             'provider' => ['required', 'string', 'max:255'],
             'model' => ['required', 'string', 'max:255'],
-            'input_tokens' => ['required', 'integer', 'min:0'],
-            'output_tokens' => ['required', 'integer', 'min:0'],
+            'input_tokens' => ['required', 'integer', 'min:0', 'max:10000000'],
+            'output_tokens' => ['required', 'integer', 'min:0', 'max:10000000'],
             // A task may only be attributed to a task that belongs to this agent.
             'task_id' => [
                 'nullable',
