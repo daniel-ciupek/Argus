@@ -69,6 +69,12 @@ it('returns 422 when meta is not an array', function (): void {
         ->assertJsonValidationErrors(['meta']);
 });
 
+it('broadcasts McpStatusUpdated under its short name', function (): void {
+    $connection = McpConnection::factory()->for($this->agent)->create();
+
+    expect((new McpStatusUpdated($connection))->broadcastAs())->toBe('McpStatusUpdated');
+});
+
 it('creates a connection on first report and stores meta', function (): void {
     Event::fake([McpStatusUpdated::class]);
 

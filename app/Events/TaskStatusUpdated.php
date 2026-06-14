@@ -31,6 +31,15 @@ class TaskStatusUpdated implements ShouldBroadcast
     }
 
     /**
+     * Short broadcast name so the frontend can listen with `.TaskStatusUpdated`
+     * instead of the fully-qualified class name.
+     */
+    public function broadcastAs(): string
+    {
+        return 'TaskStatusUpdated';
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function broadcastWith(): array

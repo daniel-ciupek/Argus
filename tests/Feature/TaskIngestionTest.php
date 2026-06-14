@@ -71,6 +71,12 @@ it('returns 422 when the name is missing', function (): void {
         ->assertJsonValidationErrors(['name']);
 });
 
+it('broadcasts TaskStatusUpdated under its short name', function (): void {
+    $task = Task::factory()->for($this->agent)->create();
+
+    expect((new TaskStatusUpdated($task))->broadcastAs())->toBe('TaskStatusUpdated');
+});
+
 it('creates a task on first report', function (): void {
     Event::fake([TaskStatusUpdated::class]);
 

@@ -46,6 +46,12 @@ it('EventReceived broadcasts on the correct private channel', function (): void 
         ->and($channels[0]->name)->toBe('private-agent.'.$this->agent->id);
 });
 
+it('EventReceived broadcasts under its short name', function (): void {
+    $event = Event::factory()->for($this->agent)->create();
+
+    expect((new EventReceived($event))->broadcastAs())->toBe('EventReceived');
+});
+
 it('EventReceived broadcastWith returns expected shape', function (): void {
     $event = Event::factory()->for($this->agent)->create([
         'message' => 'Hello broadcast',
