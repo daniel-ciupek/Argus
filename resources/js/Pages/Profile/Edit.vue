@@ -9,6 +9,9 @@ defineProps<{
     mustVerifyEmail?: boolean;
     status?: string;
 }>();
+
+const cardClasses =
+    'rounded-card border border-surface-200 bg-white p-5 shadow-card dark:border-surface-800 dark:bg-surface-900 sm:p-8';
 </script>
 
 <template>
@@ -16,36 +19,27 @@ defineProps<{
 
     <AuthenticatedLayout>
         <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
-                Profile
-            </h2>
+            <div>
+                <h1 class="text-lg font-semibold tracking-tight">Profile</h1>
+                <p class="font-mono text-xs text-surface-400">account &amp; security</p>
+            </div>
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
-                    <UpdateProfileInformationForm
-                        :must-verify-email="mustVerifyEmail"
-                        :status="status"
-                        class="max-w-xl"
-                    />
-                </div>
+        <div class="mx-auto max-w-3xl space-y-6">
+            <div :class="cardClasses">
+                <UpdateProfileInformationForm
+                    :must-verify-email="mustVerifyEmail"
+                    :status="status"
+                    class="max-w-xl"
+                />
+            </div>
 
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
-                    <UpdatePasswordForm class="max-w-xl" />
-                </div>
+            <div :class="cardClasses">
+                <UpdatePasswordForm class="max-w-xl" />
+            </div>
 
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
-                    <DeleteUserForm class="max-w-xl" />
-                </div>
+            <div :class="cardClasses">
+                <DeleteUserForm class="max-w-xl" />
             </div>
         </div>
     </AuthenticatedLayout>
