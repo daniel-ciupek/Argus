@@ -31,6 +31,9 @@
         "vue-tsc": "^2.0.24"
     },
     "dependencies": {
+        "@fontsource-variable/inter": "^5.2.8",
+        "@fontsource-variable/jetbrains-mono": "^5.2.8",
+        "@lucide/vue": "^1.18.0",
         "apexcharts": "^5.15.0",
         "pinia": "^3.0.4",
         "vue3-apexcharts": "^1.11.1"

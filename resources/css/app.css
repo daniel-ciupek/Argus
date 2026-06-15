@@ -1,3 +1,27 @@
+/* Self-hosted variable fonts (no runtime requests, bundled by Vite). */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html {
+        @apply font-sans antialiased;
+    }
+
+    /* Theme-aware page background and text. Dark is the default. */
+    body {
+        @apply bg-surface-50 text-surface-900;
+    }
+
+    html.dark body {
+        @apply bg-surface-950 text-surface-100;
+    }
+
+    /* Tabular figures so monospaced numbers line up in tables/metrics. */
+    .font-mono {
+        font-variant-numeric: tabular-nums;
+    }
+}
