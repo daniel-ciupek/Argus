@@ -12,8 +12,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
+ * @property int $id
  * @property EventType $type
+ * @property string|null $level
+ * @property string|null $message
  * @property Carbon|null $occurred_at
+ * @property Agent $agent
  */
 class Event extends Model
 {
