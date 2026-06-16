@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useColorMode } from '@/composables/useColorMode';
 import { Head } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
 import type { ApexOptions } from 'apexcharts';
@@ -34,6 +35,7 @@ const props = defineProps<{
     perModel: ModelBreakdown[];
 }>();
 
+const { t } = useI18n();
 const { mode } = useColorMode();
 
 const numberFormat = new Intl.NumberFormat('en-US');
@@ -46,10 +48,8 @@ function formatTokens(value: number): string {
     return numberFormat.format(value);
 }
 
-// Emerald accent first, then a balanced palette for the donut segments.
 const palette = ['#10b981', '#0ea5e9', '#f59e0b', '#8b5cf6', '#ef4444', '#14b8a6', '#ec4899'];
 
-// Theme-aware chart chrome, recomputed when the colour mode toggles.
 const chartTheme = computed(() => {
     const isDark = mode.value === 'dark';
     return {
@@ -59,7 +59,6 @@ const chartTheme = computed(() => {
     };
 });
 
-// Build a continuous date axis for the window and zero-fill missing days.
 const timeline = computed(() => {
     const byDate = new Map(props.daily.map((d) => [d.date, d]));
     const dates: string[] = [];
@@ -102,7 +101,7 @@ const dailyChartOptions = computed((): ApexOptions => ({
 }));
 
 const dailyChartSeries = computed(() => [
-    { name: 'Daily cost', data: timeline.value.costs },
+    { name: t('costs.dailySpend'), data: timeline.value.costs },
 ]);
 
 const modelChartOptions = computed((): ApexOptions => ({
@@ -126,27 +125,30 @@ const totalTokens = computed(
 );
 
 const counters = computed(() => [
-    { label: 'Total cost', value: formatCost(props.totals.cost), sub: null as string | null },
+    { label: t('costs.totalCost'), value: formatCost(props.totals.cost), sub: null as string | null },
     {
-        label: 'Total tokens',
+        label: t('costs.totalTokens'),
         value: formatTokens(totalTokens.value),
-        sub: `${formatTokens(props.totals.input_tokens)} in / ${formatTokens(props.totals.output_tokens)} out`,
+        sub: t('costs.tokensSub', {
+            input: formatTokens(props.totals.input_tokens),
+            output: formatTokens(props.totals.output_tokens),
+        }),
     },
-    { label: 'API calls', value: formatTokens(props.totals.calls), sub: null },
-    { label: 'Models used', value: String(props.perModel.length), sub: null },
+    { label: t('costs.apiCalls'), value: formatTokens(props.totals.calls), sub: null },
+    { label: t('costs.modelsUsed'), value: String(props.perModel.length), sub: null },
 ]);
 
 const hasData = computed(() => props.totals.calls > 0);
 </script>
 
 <template>
-    <Head title="Costs" />
+    <Head :title="t('costs.title')" />
 
     <AuthenticatedLayout>
         <template #header>
             <div>
-                <h1 class="text-lg font-semibold tracking-tight">Costs &amp; Tokens</h1>
-                <p class="font-mono text-xs text-surface-400">spend &amp; usage · last {{ periodDays }} days</p>
+                <h1 class="text-lg font-semibold tracking-tight">{{ t('costs.title') }}</h1>
+                <p class="font-mono text-xs text-surface-400">{{ t('costs.spendSubtitle', { n: periodDays }) }}</p>
             </div>
         </template>
 
@@ -168,14 +170,14 @@ const hasData = computed(() => props.totals.calls > 0);
             v-if="!hasData"
             class="mt-6 rounded-card border border-dashed border-surface-300 py-16 text-center dark:border-surface-700"
         >
-            <p class="text-sm text-surface-500">No usage recorded in the last {{ periodDays }} days.</p>
-            <p class="font-mono text-xs text-surface-400">cost &amp; token charts will appear once agents report usage</p>
+            <p class="text-sm text-surface-500">{{ t('costs.noDataNDays', { n: periodDays }) }}</p>
+            <p class="font-mono text-xs text-surface-400">{{ t('costs.noDataSub') }}</p>
         </div>
 
         <template v-else>
             <!-- Daily cost chart -->
             <div class="mt-6 rounded-card border border-surface-200 bg-white p-5 shadow-card dark:border-surface-800 dark:bg-surface-900">
-                <h2 class="mb-3 text-sm font-semibold">Daily cost</h2>
+                <h2 class="mb-3 text-sm font-semibold">{{ t('costs.dailySpend') }}</h2>
                 <VueApexCharts
                     type="area"
                     height="300"
@@ -187,7 +189,7 @@ const hasData = computed(() => props.totals.calls > 0);
             <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <!-- Per-model cost share -->
                 <div class="rounded-card border border-surface-200 bg-white p-5 shadow-card dark:border-surface-800 dark:bg-surface-900">
-                    <h2 class="mb-3 text-sm font-semibold">Cost by model</h2>
+                    <h2 class="mb-3 text-sm font-semibold">{{ t('costs.byModel') }}</h2>
                     <VueApexCharts
                         type="donut"
                         height="300"
@@ -199,15 +201,15 @@ const hasData = computed(() => props.totals.calls > 0);
                 <!-- Per-model table -->
                 <div class="overflow-hidden rounded-card border border-surface-200 bg-white shadow-card dark:border-surface-800 dark:bg-surface-900">
                     <h2 class="border-b border-surface-200 px-5 py-3.5 text-sm font-semibold dark:border-surface-800">
-                        Breakdown
+                        {{ t('costs.breakdown') }}
                     </h2>
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-surface-200 text-left font-mono text-xs uppercase tracking-wide text-surface-400 dark:border-surface-800">
-                                <th class="px-5 py-2 font-medium">Model</th>
-                                <th class="px-5 py-2 text-right font-medium">Tokens</th>
-                                <th class="px-5 py-2 text-right font-medium">Calls</th>
-                                <th class="px-5 py-2 text-right font-medium">Cost</th>
+                                <th class="px-5 py-2 font-medium">{{ t('costs.model') }}</th>
+                                <th class="px-5 py-2 text-right font-medium">{{ t('costs.tokens') }}</th>
+                                <th class="px-5 py-2 text-right font-medium">{{ t('costs.calls') }}</th>
+                                <th class="px-5 py-2 text-right font-medium">{{ t('costs.cost') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-100 dark:divide-surface-800/60">

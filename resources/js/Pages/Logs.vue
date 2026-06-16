@@ -5,9 +5,11 @@ import { useEventLog } from '@/composables/useEventLog';
 import { useEventLogStore } from '@/stores/eventLog';
 import { type PageProps } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { computed, ref, watch } from 'vue';
 import { Trash2, Radio } from '@lucide/vue';
 
+const { t } = useI18n();
 const page = usePage<PageProps>();
 const agents = computed(() => page.props.auth.agents ?? []);
 
@@ -31,7 +33,6 @@ const typeVariant: Record<string, Variant> = {
     log: 'neutral',
 };
 
-// Client-side level filter (presentation only — no backend involvement).
 const levelFilter = ref<string | null>(null);
 const levelOptions = ['info', 'warning', 'error'];
 
@@ -60,17 +61,17 @@ function formatTime(iso: string | null): string {
 </script>
 
 <template>
-    <Head title="Logs" />
+    <Head :title="t('logs.title')" />
 
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center gap-3">
                 <div>
-                    <h1 class="text-lg font-semibold tracking-tight">Live Logs</h1>
-                    <p class="font-mono text-xs text-surface-400">realtime event stream</p>
+                    <h1 class="text-lg font-semibold tracking-tight">{{ t('logs.title') }}</h1>
+                    <p class="font-mono text-xs text-surface-400">{{ t('logs.subtitle') }}</p>
                 </div>
                 <Badge :variant="store.isConnected ? 'success' : 'neutral'" dot>
-                    {{ store.isConnected ? 'connected' : 'offline' }}
+                    {{ store.isConnected ? t('logs.connected') : t('logs.offline') }}
                 </Badge>
             </div>
         </template>
@@ -80,8 +81,8 @@ function formatTime(iso: string | null): string {
             v-if="agents.length === 0"
             class="rounded-card border border-surface-200 bg-white p-10 text-center shadow-card dark:border-surface-800 dark:bg-surface-900"
         >
-            <p class="text-sm text-surface-500">No active agents.</p>
-            <p class="font-mono text-xs text-surface-400">create an agent to start streaming events</p>
+            <p class="text-sm text-surface-500">{{ t('logs.noAgents') }}</p>
+            <p class="font-mono text-xs text-surface-400">{{ t('logs.noAgentsSub') }}</p>
         </div>
 
         <div v-else class="space-y-4">
@@ -106,7 +107,7 @@ function formatTime(iso: string | null): string {
                             : 'text-surface-500 hover:text-surface-800 dark:hover:text-surface-200'"
                         @click="levelFilter = null"
                     >
-                        all
+                        {{ t('logs.filter.all') }}
                     </button>
                     <button
                         v-for="lvl in levelOptions"
@@ -118,12 +119,12 @@ function formatTime(iso: string | null): string {
                             : 'text-surface-500 hover:text-surface-800 dark:hover:text-surface-200'"
                         @click="levelFilter = lvl"
                     >
-                        {{ lvl }}
+                        {{ t(`logs.filter.${lvl}`) }}
                     </button>
                 </div>
 
                 <span class="font-mono text-xs text-surface-400">
-                    {{ filteredEvents.length }} event(s)
+                    {{ t('logs.eventsCount', { n: filteredEvents.length }) }}
                 </span>
 
                 <button
@@ -132,7 +133,7 @@ function formatTime(iso: string | null): string {
                     @click="store.clear()"
                 >
                     <Trash2 class="h-3.5 w-3.5" />
-                    Clear
+                    {{ t('logs.clear') }}
                 </button>
             </div>
 
@@ -145,7 +146,7 @@ function formatTime(iso: string | null): string {
                     <span class="h-3 w-3 rounded-full bg-success-500/70" />
                     <span class="ml-2 flex items-center gap-1.5 font-mono text-xs text-surface-400">
                         <Radio class="h-3.5 w-3.5" :class="store.isConnected ? 'text-success-500' : 'text-surface-400'" />
-                        agent stream · newest first
+                        {{ t('logs.agentStream') }}
                     </span>
                 </div>
 
@@ -158,7 +159,7 @@ function formatTime(iso: string | null): string {
                         <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-500 opacity-75" />
                         <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent-500" />
                     </span>
-                    <p class="font-mono text-sm text-surface-400">waiting for events…</p>
+                    <p class="font-mono text-sm text-surface-400">{{ t('logs.waiting') }}</p>
                 </div>
 
                 <!-- Log rows -->
