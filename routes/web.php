@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CostController;
@@ -29,7 +30,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Raw dashboard sections — placeholder pages, built out in later phases.
     Route::get('/logs', fn () => Inertia::render('Logs'))->name('logs');
     Route::get('/costs', [CostController::class, 'index'])->name('costs');
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks');
@@ -40,6 +40,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/budgets', [BudgetController::class, 'store'])->name('budgets.store');
     Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
     Route::patch('/alerts/{alert}/acknowledge', [AlertController::class, 'acknowledge'])->name('alerts.acknowledge');
+
+    Route::get('/agents', [AgentController::class, 'index'])->name('agents');
+    Route::post('/agents', [AgentController::class, 'store'])->name('agents.store');
+    Route::patch('/agents/{agent}', [AgentController::class, 'update'])->name('agents.update');
+    Route::delete('/agents/{agent}', [AgentController::class, 'destroy'])->name('agents.destroy');
+    Route::post('/agents/{agent}/rotate-secret', [AgentController::class, 'rotateSecret'])->name('agents.rotate-secret');
 });
 
 require __DIR__.'/auth.php';

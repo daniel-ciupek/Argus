@@ -11,6 +11,7 @@ import {
     ListChecks,
     Cable,
     Wallet,
+    Bot,
     Settings,
     Radar,
     Sun,
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
     { labelKey: 'nav.tasks', route: 'tasks', icon: ListChecks },
     { labelKey: 'nav.mcp', route: 'mcp', icon: Cable },
     { labelKey: 'nav.budgets', route: 'budgets', icon: Wallet },
+    { labelKey: 'nav.agents', route: 'agents', icon: Bot },
     { labelKey: 'nav.settings', route: 'settings', icon: Settings },
 ];
 
