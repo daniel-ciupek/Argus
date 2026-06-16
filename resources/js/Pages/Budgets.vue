@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Badge from '@/Components/ui/Badge.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { Plus, Trash2, Check } from '@lucide/vue';
 
 interface Agent {
@@ -37,6 +38,8 @@ const props = defineProps<{
     agents: Agent[];
     periods: string[];
 }>();
+
+const { t } = useI18n();
 
 const form = useForm({
     agent_id: props.agents[0]?.id ?? '',
@@ -97,13 +100,13 @@ const thClasses =
 </script>
 
 <template>
-    <Head title="Budgets" />
+    <Head :title="t('budgets.title')" />
 
     <AuthenticatedLayout>
         <template #header>
             <div>
-                <h1 class="text-lg font-semibold tracking-tight">Budgets &amp; Alerts</h1>
-                <p class="font-mono text-xs text-surface-400">spend limits &amp; threshold alerts</p>
+                <h1 class="text-lg font-semibold tracking-tight">{{ t('budgets.title') }}</h1>
+                <p class="font-mono text-xs text-surface-400">{{ t('budgets.subtitle') }}</p>
             </div>
         </template>
 
@@ -111,11 +114,11 @@ const thClasses =
             <!-- ── Create budget form ──────────────────────────────────── -->
             <section :class="cardClasses">
                 <h2 class="border-b border-surface-200 px-5 py-3.5 text-sm font-semibold dark:border-surface-800">
-                    Add budget
+                    {{ t('budgets.addBudget') }}
                 </h2>
                 <form class="flex flex-wrap items-end gap-4 p-5" @submit.prevent="submitBudget">
                     <div class="flex flex-col gap-1.5">
-                        <label :class="labelClasses">Agent</label>
+                        <label :class="labelClasses">{{ t('common.agent') }}</label>
                         <select v-model="form.agent_id" :class="inputClasses">
                             <option v-for="a in agents" :key="a.id" :value="a.id">{{ a.name }}</option>
                         </select>
@@ -125,9 +128,11 @@ const thClasses =
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label :class="labelClasses">Period</label>
+                        <label :class="labelClasses">{{ t('common.period') }}</label>
                         <select v-model="form.period" :class="inputClasses">
-                            <option v-for="p in periods" :key="p" :value="p">{{ p }}</option>
+                            <option v-for="p in periods" :key="p" :value="p">
+                                {{ t(`budgets.period.${p}`, p) }}
+                            </option>
                         </select>
                         <span v-if="form.errors.period" class="font-mono text-xs text-danger-500">
                             {{ form.errors.period }}
@@ -135,7 +140,7 @@ const thClasses =
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label :class="labelClasses">Limit (USD)</label>
+                        <label :class="labelClasses">{{ t('budgets.limitLabel') }}</label>
                         <input
                             v-model="form.limit_amount"
                             type="number"
@@ -155,20 +160,20 @@ const thClasses =
                         class="flex items-center gap-1.5 rounded-md bg-accent-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-500 disabled:opacity-50"
                     >
                         <Plus class="h-4 w-4" />
-                        Add
+                        {{ t('budgets.add') }}
                     </button>
                 </form>
             </section>
 
             <!-- ── Budget list ─────────────────────────────────────────── -->
             <section>
-                <h2 class="mb-3 text-sm font-semibold">Active budgets</h2>
+                <h2 class="mb-3 text-sm font-semibold">{{ t('budgets.activeBudgets') }}</h2>
 
                 <div
                     v-if="budgets.length === 0"
                     class="rounded-card border border-dashed border-surface-300 py-10 text-center text-sm text-surface-400 dark:border-surface-700"
                 >
-                    No budgets yet. Add one above.
+                    {{ t('budgets.noBudgetsYet') }}
                 </div>
 
                 <div v-else :class="cardClasses">
@@ -176,10 +181,10 @@ const thClasses =
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-surface-200 text-left dark:border-surface-800">
-                                    <th :class="thClasses">Agent</th>
-                                    <th :class="thClasses">Period</th>
-                                    <th :class="thClasses">Spent / Limit</th>
-                                    <th :class="thClasses">Progress</th>
+                                    <th :class="thClasses">{{ t('common.agent') }}</th>
+                                    <th :class="thClasses">{{ t('common.period') }}</th>
+                                    <th :class="thClasses">{{ t('budgets.spentLimit') }}</th>
+                                    <th :class="thClasses">{{ t('budgets.progress') }}</th>
                                     <th :class="thClasses"></th>
                                 </tr>
                             </thead>
@@ -187,7 +192,9 @@ const thClasses =
                                 <tr v-for="b in budgets" :key="b.id" class="transition-colors hover:bg-surface-50 dark:hover:bg-surface-800/40">
                                     <td class="px-5 py-3 font-medium text-surface-800 dark:text-surface-100">{{ b.agent_name }}</td>
                                     <td class="px-5 py-3">
-                                        <Badge :variant="periodVariant[b.period] ?? 'neutral'">{{ b.period }}</Badge>
+                                        <Badge :variant="periodVariant[b.period] ?? 'neutral'">
+                                            {{ t(`budgets.period.${b.period}`, b.period) }}
+                                        </Badge>
                                     </td>
                                     <td class="px-5 py-3 font-mono text-xs text-surface-600 dark:text-surface-300">
                                         {{ fmt(b.current_spent, b.currency) }} / {{ fmt(b.limit_amount, b.currency) }}
@@ -210,7 +217,7 @@ const thClasses =
                                             @click="deleteBudget(b.id)"
                                         >
                                             <Trash2 class="h-3.5 w-3.5" />
-                                            Delete
+                                            {{ t('common.delete') }}
                                         </button>
                                     </td>
                                 </tr>
@@ -222,13 +229,13 @@ const thClasses =
 
             <!-- ── Alert list ──────────────────────────────────────────── -->
             <section>
-                <h2 class="mb-3 text-sm font-semibold">Alerts</h2>
+                <h2 class="mb-3 text-sm font-semibold">{{ t('budgets.alerts') }}</h2>
 
                 <div
                     v-if="alerts.length === 0"
                     class="rounded-card border border-dashed border-surface-300 py-10 text-center text-sm text-surface-400 dark:border-surface-700"
                 >
-                    No alerts.
+                    {{ t('budgets.noAlerts') }}
                 </div>
 
                 <div v-else :class="cardClasses">
@@ -236,11 +243,11 @@ const thClasses =
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-surface-200 text-left dark:border-surface-800">
-                                    <th :class="thClasses">Agent</th>
-                                    <th :class="thClasses">Period</th>
-                                    <th :class="thClasses">Amount</th>
-                                    <th :class="thClasses">Triggered</th>
-                                    <th :class="thClasses">Status</th>
+                                    <th :class="thClasses">{{ t('common.agent') }}</th>
+                                    <th :class="thClasses">{{ t('common.period') }}</th>
+                                    <th :class="thClasses">{{ t('common.amount') }}</th>
+                                    <th :class="thClasses">{{ t('budgets.triggered') }}</th>
+                                    <th :class="thClasses">{{ t('common.status') }}</th>
                                     <th :class="thClasses"></th>
                                 </tr>
                             </thead>
@@ -248,13 +255,15 @@ const thClasses =
                                 <tr v-for="alert in alerts" :key="alert.id" class="transition-colors hover:bg-surface-50 dark:hover:bg-surface-800/40">
                                     <td class="px-5 py-3 font-medium text-surface-800 dark:text-surface-100">{{ alert.agent_name }}</td>
                                     <td class="px-5 py-3">
-                                        <Badge :variant="periodVariant[alert.budget_period] ?? 'neutral'">{{ alert.budget_period }}</Badge>
+                                        <Badge :variant="periodVariant[alert.budget_period] ?? 'neutral'">
+                                            {{ t(`budgets.period.${alert.budget_period}`, alert.budget_period) }}
+                                        </Badge>
                                     </td>
                                     <td class="px-5 py-3 font-mono text-xs text-surface-600 dark:text-surface-300">{{ fmt(alert.amount, alert.budget_currency) }}</td>
                                     <td class="px-5 py-3 font-mono text-xs text-surface-500 dark:text-surface-400">{{ fmtDate(alert.triggered_at) }}</td>
                                     <td class="px-5 py-3">
                                         <Badge :variant="alert.acknowledged_at ? 'neutral' : 'danger'" dot>
-                                            {{ alert.acknowledged_at ? 'acknowledged' : 'unacknowledged' }}
+                                            {{ alert.acknowledged_at ? t('budgets.acknowledged') : t('budgets.unacknowledged') }}
                                         </Badge>
                                     </td>
                                     <td class="px-5 py-3 text-right">
@@ -264,7 +273,7 @@ const thClasses =
                                             @click="acknowledge(alert.id)"
                                         >
                                             <Check class="h-3.5 w-3.5" />
-                                            Acknowledge
+                                            {{ t('common.acknowledge') }}
                                         </button>
                                     </td>
                                 </tr>

@@ -5,6 +5,7 @@ import { useMcpFeed } from '@/composables/useMcpFeed';
 import { type McpRow, useMcpStore } from '@/stores/mcp';
 import { type PageProps } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { computed, watch } from 'vue';
 import { Cable } from '@lucide/vue';
 
@@ -14,13 +15,13 @@ const props = defineProps<{
     statuses: string[];
 }>();
 
+const { t } = useI18n();
 const page = usePage<PageProps>();
 const agents = computed(() => page.props.auth.agents ?? []);
 
 const store = useMcpStore();
 store.setConnections(props.connections);
 
-// Re-seed when server-side filters change the loaded list.
 watch(
     () => props.connections,
     (list) => store.setConnections(list),
@@ -43,7 +44,6 @@ const statusVariant: Record<string, Variant> = {
     error: 'danger',
 };
 
-// Icon tint per status, so the connection card reads at a glance.
 const statusIconClass: Record<string, string> = {
     connected: 'bg-success-500/10 text-success-500',
     disabled: 'bg-surface-100 text-surface-400 dark:bg-surface-800',
@@ -75,17 +75,17 @@ const selectClasses =
 </script>
 
 <template>
-    <Head title="MCP" />
+    <Head :title="t('mcp.title')" />
 
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center gap-3">
                 <div>
-                    <h1 class="text-lg font-semibold tracking-tight">MCP connections</h1>
-                    <p class="font-mono text-xs text-surface-400">model context protocol servers</p>
+                    <h1 class="text-lg font-semibold tracking-tight">{{ t('mcp.title') }}</h1>
+                    <p class="font-mono text-xs text-surface-400">{{ t('mcp.subtitle') }}</p>
                 </div>
                 <Badge :variant="store.isConnected ? 'success' : 'neutral'" dot>
-                    {{ store.isConnected ? 'live' : 'offline' }}
+                    {{ store.isConnected ? t('common.live') : t('common.offline') }}
                 </Badge>
             </div>
         </template>
@@ -97,8 +97,10 @@ const selectClasses =
                 :class="selectClasses"
                 @change="applyFilters({ status: ($event.target as HTMLSelectElement).value })"
             >
-                <option value="">All statuses</option>
-                <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
+                <option value="">{{ t('common.allStatuses') }}</option>
+                <option v-for="s in statuses" :key="s" :value="s">
+                    {{ t(`mcp.status.${s}`, s) }}
+                </option>
             </select>
 
             <select
@@ -107,7 +109,7 @@ const selectClasses =
                 :class="selectClasses"
                 @change="applyFilters({ agent: ($event.target as HTMLSelectElement).value })"
             >
-                <option value="">All agents</option>
+                <option value="">{{ t('common.agentAll') }}</option>
                 <option v-for="a in agents" :key="a.id" :value="a.id">{{ a.name }}</option>
             </select>
         </div>
@@ -117,7 +119,7 @@ const selectClasses =
             v-if="store.connections.length === 0"
             class="rounded-card border border-dashed border-surface-300 py-16 text-center dark:border-surface-700"
         >
-            <p class="text-sm text-surface-500">No MCP connections match the current filters.</p>
+            <p class="text-sm text-surface-500">{{ t('mcp.noMatch') }}</p>
         </div>
 
         <!-- Connection cards -->
@@ -141,7 +143,7 @@ const selectClasses =
                         </p>
                     </div>
                     <Badge :variant="statusVariant[connection.status] ?? 'neutral'" dot>
-                        {{ connection.status }}
+                        {{ t(`mcp.status.${connection.status}`, connection.status) }}
                     </Badge>
                 </div>
 

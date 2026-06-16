@@ -5,6 +5,7 @@ import { useTaskFeed } from '@/composables/useTaskFeed';
 import { type TaskRow, useTaskStore } from '@/stores/tasks';
 import { type PageProps } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { computed, watch } from 'vue';
 
 const props = defineProps<{
@@ -13,13 +14,13 @@ const props = defineProps<{
     statuses: string[];
 }>();
 
+const { t } = useI18n();
 const page = usePage<PageProps>();
 const agents = computed(() => page.props.auth.agents ?? []);
 
 const store = useTaskStore();
 store.setTasks(props.tasks);
 
-// Re-seed when server-side filters change the loaded list.
 watch(
     () => props.tasks,
     (list) => store.setTasks(list),
@@ -68,17 +69,17 @@ const selectClasses =
 </script>
 
 <template>
-    <Head title="Tasks" />
+    <Head :title="t('tasks.title')" />
 
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center gap-3">
                 <div>
-                    <h1 class="text-lg font-semibold tracking-tight">Tasks</h1>
-                    <p class="font-mono text-xs text-surface-400">scheduled jobs &amp; runs</p>
+                    <h1 class="text-lg font-semibold tracking-tight">{{ t('tasks.title') }}</h1>
+                    <p class="font-mono text-xs text-surface-400">{{ t('tasks.subtitle') }}</p>
                 </div>
                 <Badge :variant="store.isConnected ? 'success' : 'neutral'" dot>
-                    {{ store.isConnected ? 'live' : 'offline' }}
+                    {{ store.isConnected ? t('common.live') : t('common.offline') }}
                 </Badge>
             </div>
         </template>
@@ -90,8 +91,10 @@ const selectClasses =
                 :class="selectClasses"
                 @change="applyFilters({ status: ($event.target as HTMLSelectElement).value })"
             >
-                <option value="">All statuses</option>
-                <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
+                <option value="">{{ t('common.allStatuses') }}</option>
+                <option v-for="s in statuses" :key="s" :value="s">
+                    {{ t(`tasks.status.${s}`, s) }}
+                </option>
             </select>
 
             <select
@@ -100,7 +103,7 @@ const selectClasses =
                 :class="selectClasses"
                 @change="applyFilters({ agent: ($event.target as HTMLSelectElement).value })"
             >
-                <option value="">All agents</option>
+                <option value="">{{ t('common.agentAll') }}</option>
                 <option v-for="a in agents" :key="a.id" :value="a.id">{{ a.name }}</option>
             </select>
         </div>
@@ -110,7 +113,7 @@ const selectClasses =
             v-if="store.tasks.length === 0"
             class="rounded-card border border-dashed border-surface-300 py-16 text-center dark:border-surface-700"
         >
-            <p class="text-sm text-surface-500">No tasks match the current filters.</p>
+            <p class="text-sm text-surface-500">{{ t('tasks.noMatch') }}</p>
         </div>
 
         <!-- Table -->
@@ -122,12 +125,12 @@ const selectClasses =
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-surface-200 text-left font-mono text-xs uppercase tracking-wide text-surface-400 dark:border-surface-800">
-                            <th class="px-5 py-2.5 font-medium">Task</th>
-                            <th v-if="showAgentColumn" class="px-5 py-2.5 font-medium">Agent</th>
-                            <th class="px-5 py-2.5 font-medium">Status</th>
-                            <th class="px-5 py-2.5 font-medium">Schedule</th>
-                            <th class="px-5 py-2.5 font-medium">Last run</th>
-                            <th class="px-5 py-2.5 font-medium">Next run</th>
+                            <th class="px-5 py-2.5 font-medium">{{ t('tasks.task') }}</th>
+                            <th v-if="showAgentColumn" class="px-5 py-2.5 font-medium">{{ t('common.agent') }}</th>
+                            <th class="px-5 py-2.5 font-medium">{{ t('common.status') }}</th>
+                            <th class="px-5 py-2.5 font-medium">{{ t('tasks.schedule') }}</th>
+                            <th class="px-5 py-2.5 font-medium">{{ t('tasks.lastRun') }}</th>
+                            <th class="px-5 py-2.5 font-medium">{{ t('tasks.nextRun') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-surface-100 dark:divide-surface-800/60">
@@ -141,7 +144,9 @@ const selectClasses =
                                 {{ task.agent_name }}
                             </td>
                             <td class="px-5 py-3">
-                                <Badge :variant="statusVariant[task.status] ?? 'neutral'" dot>{{ task.status }}</Badge>
+                                <Badge :variant="statusVariant[task.status] ?? 'neutral'" dot>
+                                    {{ t(`tasks.status.${task.status}`, task.status) }}
+                                </Badge>
                             </td>
                             <td class="px-5 py-3 font-mono text-surface-600 dark:text-surface-300">{{ task.schedule ?? '—' }}</td>
                             <td class="px-5 py-3 font-mono text-xs text-surface-500 dark:text-surface-400">{{ formatDate(task.last_run_at) }}</td>
