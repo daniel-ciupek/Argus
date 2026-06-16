@@ -130,5 +130,6 @@ return [
     */
 
     'rate_limit_ingest' => (int) env('RATE_LIMIT_INGEST', 60),
+    'rate_limit_command_poll' => (int) env('RATE_LIMIT_COMMAND_POLL', 120),
 
 ];

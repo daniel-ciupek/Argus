@@ -28,6 +28,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
+        RateLimiter::for('command-poll', function (Request $request): Limit {
+            $raw = $request->route('agent');
+            $agentSlug = $raw instanceof Agent ? $raw->slug : (string) ($raw ?? 'unknown');
+
+            return Limit::perMinute(config('app.rate_limit_command_poll', 120))
+                ->by($agentSlug.'|'.$request->ip());
+        });
+
         RateLimiter::for('ingest', function (Request $request): Limit {
             $raw = $request->route('agent');
             // ThrottleRequests runs before SubstituteBindings, so $raw is normally
