@@ -6,11 +6,14 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 
 defineProps<{
     canResetPassword?: boolean;
     status?: string;
 }>();
+
+const { t } = useI18n();
 
 const form = useForm({
     email: '',
@@ -29,7 +32,7 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Log in" />
+        <Head :title="t('auth.login')" />
 
         <div v-if="status" class="mb-4 text-sm font-medium text-success-600 dark:text-success-400">
             {{ status }}
@@ -37,8 +40,7 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="Email" />
-
+                <InputLabel for="email" :value="t('auth.email')" />
                 <TextInput
                     id="email"
                     type="email"
@@ -48,13 +50,11 @@ const submit = () => {
                     autofocus
                     autocomplete="username"
                 />
-
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
+                <InputLabel for="password" :value="t('auth.password')" />
                 <TextInput
                     id="password"
                     type="password"
@@ -63,16 +63,15 @@ const submit = () => {
                     required
                     autocomplete="current-password"
                 />
-
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
             <div class="mt-4 block">
                 <label class="flex items-center">
                     <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-surface-600 dark:text-surface-300"
-                        >Remember me</span
-                    >
+                    <span class="ms-2 text-sm text-surface-600 dark:text-surface-300">
+                        {{ t('auth.rememberMe') }}
+                    </span>
                 </label>
             </div>
 
@@ -82,7 +81,7 @@ const submit = () => {
                     :href="route('password.request')"
                     class="rounded-md text-sm text-surface-600 underline hover:text-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 dark:text-surface-400 dark:hover:text-accent-400 dark:focus:ring-offset-surface-900"
                 >
-                    Forgot your password?
+                    {{ t('auth.forgotPassword') }}
                 </Link>
 
                 <PrimaryButton
@@ -90,7 +89,7 @@ const submit = () => {
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Log in
+                    {{ t('auth.login') }}
                 </PrimaryButton>
             </div>
         </form>

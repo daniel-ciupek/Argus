@@ -3,10 +3,13 @@ import { computed } from 'vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
     status?: string;
 }>();
+
+const { t } = useI18n();
 
 const form = useForm({});
 
@@ -21,20 +24,17 @@ const verificationLinkSent = computed(
 
 <template>
     <GuestLayout>
-        <Head title="Email Verification" />
+        <Head :title="t('auth.verifyEmail')" />
 
         <div class="mb-4 text-sm text-surface-500 dark:text-surface-400">
-            Thanks for signing up! Before getting started, could you verify your
-            email address by clicking on the link we just emailed to you? If you
-            didn't receive the email, we will gladly send you another.
+            {{ t('auth.verifyEmailDesc') }}
         </div>
 
         <div
             class="mb-4 text-sm font-medium text-success-600 dark:text-success-400"
             v-if="verificationLinkSent"
         >
-            A new verification link has been sent to the email address you
-            provided during registration.
+            {{ t('auth.verifyEmailSent') }}
         </div>
 
         <form @submit.prevent="submit">
@@ -43,7 +43,7 @@ const verificationLinkSent = computed(
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Resend Verification Email
+                    {{ t('auth.resendVerification') }}
                 </PrimaryButton>
 
                 <Link
@@ -51,7 +51,7 @@ const verificationLinkSent = computed(
                     method="post"
                     as="button"
                     class="rounded-md text-sm text-surface-600 underline hover:text-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 dark:text-surface-400 dark:hover:text-accent-400 dark:focus:ring-offset-surface-900"
-                    >Log Out</Link
+                    >{{ t('nav.logout') }}</Link
                 >
             </div>
         </form>
