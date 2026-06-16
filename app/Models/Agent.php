@@ -77,4 +77,10 @@ class Agent extends Model
     {
         return $this->hasMany(UsageRecord::class);
     }
+
+    /** @return HasMany<AgentCommand, $this> */
+    public function commands(): HasMany
+    {
+        return $this->hasMany(AgentCommand::class);
+    }
 }
