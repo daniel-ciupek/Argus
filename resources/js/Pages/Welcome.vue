@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { useColorMode } from '@/composables/useColorMode';
+import { useLocale } from '@/composables/useLocale';
 import {
     Radar,
     Sun,
@@ -23,6 +24,7 @@ defineProps<{
 }>();
 
 const { mode, toggle } = useColorMode();
+const { locale, toggle: toggleLocale } = useLocale();
 
 type Feature = { title: string; description: string; icon: LucideIcon };
 
@@ -53,6 +55,17 @@ const features: Feature[] = [
             </div>
 
             <nav class="flex items-center gap-2">
+                <!-- Locale toggle -->
+                <button
+                    type="button"
+                    class="rounded-md px-2.5 py-1.5 font-mono text-xs font-medium text-surface-500 transition-colors hover:bg-surface-100 hover:text-surface-700 dark:hover:bg-surface-800 dark:hover:text-surface-200"
+                    :aria-label="locale === 'pl' ? 'Switch to English' : 'Przełącz na polski'"
+                    @click="toggleLocale"
+                >
+                    {{ locale === 'pl' ? 'EN' : 'PL' }}
+                </button>
+
+                <!-- Theme toggle -->
                 <button
                     type="button"
                     class="rounded-md p-2 text-surface-500 transition-colors hover:bg-surface-100 hover:text-surface-700 dark:hover:bg-surface-800 dark:hover:text-surface-200"

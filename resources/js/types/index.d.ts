@@ -18,4 +18,5 @@ export type PageProps<
         user: User;
         agents: Agent[];
     };
+    locale: 'pl' | 'en';
 };

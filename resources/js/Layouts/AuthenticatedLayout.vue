@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { useColorMode } from '@/composables/useColorMode';
+import { useLocale } from '@/composables/useLocale';
 import {
     LayoutDashboard,
     ScrollText,
@@ -34,6 +35,7 @@ const navItems: NavItem[] = [
 
 const page = usePage();
 const { mode, toggle } = useColorMode();
+const { locale, toggle: toggleLocale } = useLocale();
 
 const sidebarOpen = ref(false);
 const userMenuOpen = ref(false);
@@ -137,6 +139,16 @@ const userMenuOpen = ref(false);
                 <div class="min-w-0 flex-1">
                     <slot name="header" />
                 </div>
+
+                <!-- Locale toggle -->
+                <button
+                    type="button"
+                    class="rounded-md px-2.5 py-1.5 font-mono text-xs font-medium text-surface-500 transition-colors hover:bg-surface-100 hover:text-surface-700 dark:hover:bg-surface-800 dark:hover:text-surface-200"
+                    :aria-label="locale === 'pl' ? 'Switch to English' : 'Przełącz na polski'"
+                    @click="toggleLocale"
+                >
+                    {{ locale === 'pl' ? 'EN' : 'PL' }}
+                </button>
 
                 <!-- Theme toggle -->
                 <button

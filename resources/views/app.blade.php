@@ -1,20 +1,25 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="pl">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        {{-- Apply the saved colour mode before first paint to avoid a flash.
-             Mirrors the logic in resources/js/composables/useColorMode.ts. --}}
+        {{-- Apply saved colour mode and locale before first paint to avoid a flash.
+             Mirrors the logic in useColorMode.ts and useLocale.ts. --}}
         <script>
             (function () {
-                var stored = localStorage.getItem('color-mode');
-                var dark = stored === 'dark'
-                    || (stored !== 'light'
+                var cm = localStorage.getItem('color-mode');
+                var dark = cm === 'dark'
+                    || (cm !== 'light'
                         && !window.matchMedia('(prefers-color-scheme: light)').matches);
                 document.documentElement.classList.toggle('dark', dark);
+
+                var loc = localStorage.getItem('locale');
+                if (loc === 'pl' || loc === 'en') {
+                    document.documentElement.lang = loc;
+                }
             })();
         </script>
 

@@ -40,6 +40,7 @@ class HandleInertiaRequests extends Middleware
                     ->select(['id', 'name', 'slug'])
                     ->get(),
             ],
+            'locale' => app()->getLocale(),
         ];
     }
 }

@@ -36,6 +36,7 @@
         "@lucide/vue": "^1.18.0",
         "apexcharts": "^5.15.0",
         "pinia": "^3.0.4",
+        "vue-i18n": "^10.0.8",
         "vue3-apexcharts": "^1.11.1"
     }
 }
