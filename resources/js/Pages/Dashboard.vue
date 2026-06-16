@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Badge from '@/Components/ui/Badge.vue';
 import {
@@ -37,6 +38,8 @@ const props = defineProps<{
     recent: RecentEvent[];
 }>();
 
+const { t } = useI18n();
+
 type Variant = 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'accent';
 
 type Kpi = {
@@ -53,33 +56,35 @@ const usd = (value: string): string =>
 
 const kpis = computed<Kpi[]>(() => [
     {
-        label: 'Cost',
+        label: t('dashboard.totalCost'),
         value: usd(props.stats.cost),
-        hint: `last ${props.periodDays} days`,
+        hint: t('dashboard.lastNDays', { n: props.periodDays }),
         hintVariant: 'neutral',
         icon: CircleDollarSign,
         route: 'costs',
     },
     {
-        label: 'Events',
+        label: t('dashboard.events'),
         value: props.stats.events.toLocaleString('en-US'),
-        hint: props.stats.errors > 0 ? `${props.stats.errors} errors` : 'no errors',
+        hint: props.stats.errors > 0
+            ? t('dashboard.errorsCount', { n: props.stats.errors })
+            : t('dashboard.noErrors'),
         hintVariant: props.stats.errors > 0 ? 'danger' : 'success',
         icon: Activity,
         route: 'logs',
     },
     {
-        label: 'Agents',
+        label: t('dashboard.agents'),
         value: `${props.stats.agents.active}/${props.stats.agents.total}`,
-        hint: 'active',
+        hint: t('dashboard.active'),
         hintVariant: props.stats.agents.active > 0 ? 'success' : 'neutral',
         icon: Bot,
         route: 'dashboard',
     },
     {
-        label: 'MCP',
+        label: t('dashboard.mcpConnections'),
         value: `${props.stats.mcp.connected}/${props.stats.mcp.total}`,
-        hint: 'connected',
+        hint: t('dashboard.connected'),
         hintVariant: props.stats.mcp.connected === props.stats.mcp.total && props.stats.mcp.total > 0
             ? 'success'
             : props.stats.mcp.connected === 0 && props.stats.mcp.total > 0
@@ -107,23 +112,23 @@ function relativeTime(iso: string | null): string {
     if (iso === null) return '—';
     const diff = Date.now() - new Date(iso).getTime();
     const s = Math.round(diff / 1000);
-    if (s < 60) return `${s}s ago`;
+    if (s < 60) return t('dashboard.justNow');
     const m = Math.round(s / 60);
-    if (m < 60) return `${m}m ago`;
+    if (m < 60) return t('dashboard.minutesAgo', { n: m });
     const h = Math.round(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return `${Math.round(h / 24)}d ago`;
+    if (h < 24) return t('dashboard.hoursAgo', { n: h });
+    return t('dashboard.daysAgo', { n: Math.round(h / 24) });
 }
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="t('dashboard.title')" />
 
     <AuthenticatedLayout>
         <template #header>
             <div>
-                <h1 class="text-lg font-semibold tracking-tight">Dashboard</h1>
-                <p class="font-mono text-xs text-surface-400">overview · last {{ periodDays }} days</p>
+                <h1 class="text-lg font-semibold tracking-tight">{{ t('dashboard.title') }}</h1>
+                <p class="font-mono text-xs text-surface-400">{{ t('dashboard.subtitle') }}</p>
             </div>
         </template>
 
@@ -156,20 +161,20 @@ function relativeTime(iso: string | null): string {
             class="mt-6 overflow-hidden rounded-card border border-surface-200 bg-white shadow-card dark:border-surface-800 dark:bg-surface-900"
         >
             <div class="flex items-center justify-between border-b border-surface-200 px-5 py-3.5 dark:border-surface-800">
-                <h2 class="text-sm font-semibold">Recent activity</h2>
+                <h2 class="text-sm font-semibold">{{ t('dashboard.recentActivity') }}</h2>
                 <Link
                     :href="route('logs')"
                     class="font-mono text-xs text-accent-600 hover:underline dark:text-accent-400"
                 >
-                    view all →
+                    {{ t('dashboard.viewAll') }}
                 </Link>
             </div>
 
             <!-- Empty state -->
             <div v-if="recent.length === 0" class="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
                 <Inbox class="h-8 w-8 text-surface-300 dark:text-surface-600" />
-                <p class="text-sm text-surface-500">No events yet</p>
-                <p class="font-mono text-xs text-surface-400">events from your agents will appear here</p>
+                <p class="text-sm text-surface-500">{{ t('dashboard.noRecentActivity') }}</p>
+                <p class="font-mono text-xs text-surface-400">{{ t('dashboard.noRecentActivitySub') }}</p>
             </div>
 
             <ul v-else class="divide-y divide-surface-100 dark:divide-surface-800">

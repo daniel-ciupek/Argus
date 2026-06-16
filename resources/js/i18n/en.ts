@@ -68,6 +68,12 @@ export default {
         minutesAgo: '{n}m ago',
         hoursAgo: '{n}h ago',
         daysAgo: '{n}d ago',
+        lastNDays: 'last {n} days',
+        errorsCount: '{n} errors',
+        noErrors: 'no errors',
+        active: 'active',
+        connected: 'connected',
+        viewAll: 'view all →',
     },
     logs: {
         title: 'Live logs',

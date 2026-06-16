@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { useColorMode } from '@/composables/useColorMode';
 import { useLocale } from '@/composables/useLocale';
 import {
@@ -23,19 +25,28 @@ defineProps<{
     phpVersion: string;
 }>();
 
+const { t } = useI18n();
 const { mode, toggle } = useColorMode();
 const { locale, toggle: toggleLocale } = useLocale();
 
-type Feature = { title: string; description: string; icon: LucideIcon };
+type Feature = { titleKey: string; descKey: string; icon: LucideIcon };
 
-const features: Feature[] = [
-    { title: 'Live logs', description: 'Stream agent events in real time over WebSockets with level filtering.', icon: ScrollText },
-    { title: 'Costs & tokens', description: 'Track spend and token usage per model with daily charts.', icon: CircleDollarSign },
-    { title: 'Tasks', description: 'Monitor scheduled jobs, their status and next run at a glance.', icon: ListChecks },
-    { title: 'MCP connections', description: 'See the health of every Model Context Protocol server.', icon: Cable },
-    { title: 'Budgets & alerts', description: 'Set spend limits and get alerted when a threshold is crossed.', icon: Wallet },
-    { title: 'Realtime by default', description: 'Powered by Laravel Reverb — the UI updates without a refresh.', icon: Zap },
+const featureDefs: Feature[] = [
+    { titleKey: 'welcome.features.logs.title', descKey: 'welcome.features.logs.description', icon: ScrollText },
+    { titleKey: 'welcome.features.costs.title', descKey: 'welcome.features.costs.description', icon: CircleDollarSign },
+    { titleKey: 'welcome.features.tasks.title', descKey: 'welcome.features.tasks.description', icon: ListChecks },
+    { titleKey: 'welcome.features.mcp.title', descKey: 'welcome.features.mcp.description', icon: Cable },
+    { titleKey: 'welcome.features.budgets.title', descKey: 'welcome.features.budgets.description', icon: Wallet },
+    { titleKey: 'welcome.features.realtime.title', descKey: 'welcome.features.realtime.description', icon: Zap },
 ];
+
+const features = computed(() =>
+    featureDefs.map((f) => ({
+        title: t(f.titleKey),
+        description: t(f.descKey),
+        icon: f.icon,
+    })),
+);
 </script>
 
 <template>
@@ -82,21 +93,21 @@ const features: Feature[] = [
                         :href="route('dashboard')"
                         class="rounded-md bg-accent-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-500"
                     >
-                        Dashboard
+                        {{ t('welcome.openDashboard') }}
                     </Link>
                     <template v-else>
                         <Link
                             :href="route('login')"
                             class="rounded-md px-4 py-2 text-sm font-medium text-surface-600 transition-colors hover:text-surface-900 dark:text-surface-300 dark:hover:text-surface-100"
                         >
-                            Log in
+                            {{ t('welcome.logIn') }}
                         </Link>
                         <Link
                             v-if="canRegister"
                             :href="route('register')"
                             class="rounded-md bg-accent-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-500"
                         >
-                            Get started
+                            {{ t('welcome.getStarted') }}
                         </Link>
                     </template>
                 </template>
@@ -110,16 +121,15 @@ const features: Feature[] = [
                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-success-500 opacity-75" />
                     <span class="relative inline-flex h-2 w-2 rounded-full bg-success-500" />
                 </span>
-                self-hosted · realtime
+                {{ t('welcome.tagline') }}
             </span>
 
             <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-                Mission control for your
-                <span class="text-accent-500">AI agents</span>
+                {{ t('welcome.title') }}
+                <span class="text-accent-500">{{ t('welcome.titleHighlight') }}</span>
             </h1>
             <p class="mx-auto mt-5 max-w-2xl text-lg text-surface-500 dark:text-surface-400">
-                A self-hosted dashboard to supervise and control AI agents — live logs, token costs,
-                scheduled tasks, MCP connections and budget alerts, all in one place.
+                {{ t('welcome.subtitle') }}
             </p>
 
             <div class="mt-8 flex items-center justify-center gap-3">
@@ -128,7 +138,7 @@ const features: Feature[] = [
                     :href="route('register')"
                     class="inline-flex items-center gap-2 rounded-md bg-accent-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-500"
                 >
-                    Get started
+                    {{ t('welcome.getStarted') }}
                     <ArrowRight class="h-4 w-4" />
                 </Link>
                 <Link
@@ -136,14 +146,14 @@ const features: Feature[] = [
                     :href="route('login')"
                     class="inline-flex items-center rounded-md border border-surface-300 px-5 py-2.5 text-sm font-medium text-surface-700 transition-colors hover:bg-surface-100 dark:border-surface-700 dark:text-surface-200 dark:hover:bg-surface-800"
                 >
-                    Log in
+                    {{ t('welcome.logIn') }}
                 </Link>
                 <Link
                     v-if="$page.props.auth.user"
                     :href="route('dashboard')"
                     class="inline-flex items-center gap-2 rounded-md bg-accent-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-500"
                 >
-                    Open dashboard
+                    {{ t('welcome.openDashboard') }}
                     <ArrowRight class="h-4 w-4" />
                 </Link>
             </div>
@@ -169,7 +179,7 @@ const features: Feature[] = [
         <!-- Footer -->
         <footer class="border-t border-surface-200 dark:border-surface-800">
             <div class="mx-auto max-w-6xl px-6 py-6 text-center font-mono text-xs text-surface-400">
-                Hermes Cockpit · built with Laravel {{ laravelVersion }} · PHP {{ phpVersion }} · Reverb
+                {{ t('welcome.footer', { laravel: laravelVersion, php: phpVersion }) }}
             </div>
         </footer>
     </div>

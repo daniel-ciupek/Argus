@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { useColorMode } from '@/composables/useColorMode';
 import { useLocale } from '@/composables/useLocale';
 import {
@@ -21,18 +22,19 @@ import {
     type LucideIcon,
 } from '@lucide/vue';
 
-type NavItem = { label: string; route: string; icon: LucideIcon };
+type NavItem = { labelKey: string; route: string; icon: LucideIcon };
 
 const navItems: NavItem[] = [
-    { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard },
-    { label: 'Logs', route: 'logs', icon: ScrollText },
-    { label: 'Costs', route: 'costs', icon: CircleDollarSign },
-    { label: 'Tasks', route: 'tasks', icon: ListChecks },
-    { label: 'MCP', route: 'mcp', icon: Cable },
-    { label: 'Budgets', route: 'budgets', icon: Wallet },
-    { label: 'Settings', route: 'settings', icon: Settings },
+    { labelKey: 'nav.dashboard', route: 'dashboard', icon: LayoutDashboard },
+    { labelKey: 'nav.logs', route: 'logs', icon: ScrollText },
+    { labelKey: 'nav.costs', route: 'costs', icon: CircleDollarSign },
+    { labelKey: 'nav.tasks', route: 'tasks', icon: ListChecks },
+    { labelKey: 'nav.mcp', route: 'mcp', icon: Cable },
+    { labelKey: 'nav.budgets', route: 'budgets', icon: Wallet },
+    { labelKey: 'nav.settings', route: 'settings', icon: Settings },
 ];
 
+const { t } = useI18n();
 const page = usePage();
 const { mode, toggle } = useColorMode();
 const { locale, toggle: toggleLocale } = useLocale();
@@ -104,7 +106,7 @@ const userMenuOpen = ref(false);
                                 : 'text-surface-400 group-hover:text-surface-600 dark:group-hover:text-surface-300'
                         "
                     />
-                    {{ item.label }}
+                    {{ t(item.labelKey) }}
                 </Link>
             </nav>
 
@@ -115,7 +117,7 @@ const userMenuOpen = ref(false);
                         <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-success-500 opacity-75" />
                         <span class="relative inline-flex h-2 w-2 rounded-full bg-success-500" />
                     </span>
-                    <span>realtime · connected</span>
+                    <span>{{ t('nav.realtimeConnected') }}</span>
                 </div>
             </div>
         </aside>
@@ -205,7 +207,7 @@ const userMenuOpen = ref(false);
                                     @click="userMenuOpen = false"
                                 >
                                     <Settings class="h-4 w-4 text-surface-400" />
-                                    Profile
+                                    {{ t('nav.profile') }}
                                 </Link>
                                 <Link
                                     :href="route('logout')"
@@ -214,7 +216,7 @@ const userMenuOpen = ref(false);
                                     class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-danger-600 hover:bg-danger-500/10 dark:text-danger-400"
                                 >
                                     <LogOut class="h-4 w-4" />
-                                    Log Out
+                                    {{ t('nav.logout') }}
                                 </Link>
                             </div>
                         </div>
