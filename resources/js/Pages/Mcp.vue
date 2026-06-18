@@ -7,7 +7,7 @@ import { type PageProps } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { computed, watch } from 'vue';
-import { Cable } from '@lucide/vue';
+import { Cable, Power, PowerOff, RefreshCw } from '@lucide/vue';
 
 const props = defineProps<{
     connections: McpRow[];
@@ -68,6 +68,14 @@ function applyFilters(patch: Partial<{ status: string; agent: string }>): void {
 
 function formatMeta(meta: Record<string, unknown> | null): string | null {
     return meta && Object.keys(meta).length > 0 ? JSON.stringify(meta, null, 2) : null;
+}
+
+function sendMcpCommand(type: string, mcpName: string, agentId: number): void {
+    router.post(
+        route('commands.store', agentId),
+        { type, payload: { mcp_name: mcpName } },
+        { preserveScroll: true },
+    );
 }
 
 const selectClasses =
@@ -151,6 +159,35 @@ const selectClasses =
                     v-if="formatMeta(connection.meta)"
                     class="mt-3 max-h-32 overflow-auto rounded-md bg-surface-50 p-2.5 font-mono text-xs leading-relaxed text-surface-500 dark:bg-surface-950/40 dark:text-surface-400"
                 >{{ formatMeta(connection.meta) }}</pre>
+
+                <div class="mt-3 flex gap-1.5 border-t border-surface-100 pt-3 dark:border-surface-800">
+                    <button
+                        v-if="connection.status !== 'connected'"
+                        :title="t('commands.enable')"
+                        class="flex items-center gap-1 rounded px-2.5 py-1 text-xs font-medium text-surface-500 transition hover:bg-success-50 hover:text-success-700 dark:hover:bg-success-950 dark:hover:text-success-400"
+                        @click="sendMcpCommand('mcp.enable', connection.name, connection.agent_id)"
+                    >
+                        <Power class="h-3.5 w-3.5" />
+                        {{ t('commands.enable') }}
+                    </button>
+                    <button
+                        v-if="connection.status === 'connected'"
+                        :title="t('commands.disable')"
+                        class="flex items-center gap-1 rounded px-2.5 py-1 text-xs font-medium text-surface-500 transition hover:bg-warning-50 hover:text-warning-700 dark:hover:bg-warning-950 dark:hover:text-warning-400"
+                        @click="sendMcpCommand('mcp.disable', connection.name, connection.agent_id)"
+                    >
+                        <PowerOff class="h-3.5 w-3.5" />
+                        {{ t('commands.disable') }}
+                    </button>
+                    <button
+                        :title="t('commands.restart')"
+                        class="flex items-center gap-1 rounded px-2.5 py-1 text-xs font-medium text-surface-500 transition hover:bg-surface-100 hover:text-surface-700 dark:hover:bg-surface-800 dark:hover:text-surface-300"
+                        @click="sendMcpCommand('mcp.restart', connection.name, connection.agent_id)"
+                    >
+                        <RefreshCw class="h-3.5 w-3.5" />
+                        {{ t('commands.restart') }}
+                    </button>
+                </div>
             </div>
         </div>
     </AuthenticatedLayout>

@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
-import { Copy, Check, RefreshCw, Trash2, Pencil } from '@lucide/vue';
+import { Copy, Check, RefreshCw, Trash2, Pencil, PauseCircle, PlayCircle, StopCircle, MessageSquare, Send } from '@lucide/vue';
 
 interface Agent {
     id: number;
@@ -69,6 +69,37 @@ async function copySecret() {
 }
 
 const showSecretBanner = computed(() => !!props.newSecret);
+
+const instructAgentId = ref<number | null>(null);
+const instructText = ref('');
+
+function openInstruct(agent: Agent): void {
+    instructAgentId.value = agent.id;
+    instructText.value = '';
+}
+
+function sendInstruct(agent: Agent): void {
+    if (!instructText.value.trim()) return;
+    router.post(
+        route('commands.store', agent.id),
+        { type: 'agent.instruct', payload: { text: instructText.value.trim() } },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                instructAgentId.value = null;
+                instructText.value = '';
+            },
+        },
+    );
+}
+
+function sendAgentCommand(type: string, agent: Agent): void {
+    router.post(
+        route('commands.store', agent.id),
+        { type },
+        { preserveScroll: true },
+    );
+}
 </script>
 
 <template>
@@ -191,6 +222,42 @@ const showSecretBanner = computed(() => !!props.newSecret);
                         <!-- Actions -->
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-1">
+                                <!-- Command: Pause / Resume -->
+                                <button
+                                    v-if="agent.is_active"
+                                    :title="t('commands.pause')"
+                                    class="rounded p-1 text-surface-400 transition hover:bg-warning-50 hover:text-warning-600 dark:hover:bg-warning-950 dark:hover:text-warning-400"
+                                    @click="sendAgentCommand('agent.pause', agent)"
+                                >
+                                    <PauseCircle class="h-4 w-4" />
+                                </button>
+                                <button
+                                    v-else
+                                    :title="t('commands.resume')"
+                                    class="rounded p-1 text-surface-400 transition hover:bg-success-50 hover:text-success-600 dark:hover:bg-success-950 dark:hover:text-success-400"
+                                    @click="sendAgentCommand('agent.resume', agent)"
+                                >
+                                    <PlayCircle class="h-4 w-4" />
+                                </button>
+                                <!-- Command: Stop -->
+                                <button
+                                    :title="t('commands.stop')"
+                                    class="rounded p-1 text-surface-400 transition hover:bg-danger-50 hover:text-danger-600 dark:hover:bg-danger-950 dark:hover:text-danger-400"
+                                    @click="sendAgentCommand('agent.stop', agent)"
+                                >
+                                    <StopCircle class="h-4 w-4" />
+                                </button>
+                                <!-- Command: Instruct -->
+                                <button
+                                    :title="t('commands.instruct')"
+                                    class="rounded p-1 text-surface-400 transition hover:bg-accent-50 hover:text-accent-600 dark:hover:bg-accent-950 dark:hover:text-accent-400"
+                                    @click="openInstruct(agent)"
+                                >
+                                    <MessageSquare class="h-4 w-4" />
+                                </button>
+
+                                <span class="mx-1 h-4 w-px bg-surface-200 dark:bg-surface-700" />
+
                                 <button
                                     @click="startEdit(agent)"
                                     :title="t('agents.editName')"
@@ -221,6 +288,34 @@ const showSecretBanner = computed(() => !!props.newSecret);
                                 >
                                     <Trash2 class="h-4 w-4" />
                                 </button>
+                            </div>
+                            <!-- Instruct panel -->
+                            <div
+                                v-if="instructAgentId === agent.id"
+                                class="mt-2 flex gap-2"
+                            >
+                                <textarea
+                                    v-model="instructText"
+                                    rows="2"
+                                    :placeholder="t('commands.instructPlaceholder')"
+                                    class="flex-1 resize-none rounded-lg border border-surface-300 bg-transparent px-3 py-2 font-mono text-xs focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500 dark:border-surface-700"
+                                />
+                                <div class="flex flex-col gap-1">
+                                    <button
+                                        :disabled="!instructText.trim()"
+                                        class="flex items-center gap-1 rounded-lg bg-accent-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-accent-700 disabled:opacity-50"
+                                        @click="sendInstruct(agent)"
+                                    >
+                                        <Send class="h-3.5 w-3.5" />
+                                        {{ t('commands.send') }}
+                                    </button>
+                                    <button
+                                        class="rounded-lg border border-surface-300 px-3 py-1.5 text-xs text-surface-500 transition hover:bg-surface-100 dark:border-surface-700 dark:hover:bg-surface-800"
+                                        @click="instructAgentId = null"
+                                    >
+                                        {{ t('common.cancel') }}
+                                    </button>
+                                </div>
                             </div>
                         </td>
                     </tr>

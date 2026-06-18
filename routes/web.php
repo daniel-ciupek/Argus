@@ -3,6 +3,7 @@
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\CommandController;
 use App\Http\Controllers\CostController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\McpController;
@@ -46,6 +47,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/agents/{agent}', [AgentController::class, 'update'])->name('agents.update');
     Route::delete('/agents/{agent}', [AgentController::class, 'destroy'])->name('agents.destroy');
     Route::post('/agents/{agent}/rotate-secret', [AgentController::class, 'rotateSecret'])->name('agents.rotate-secret');
+
+    Route::get('/agents/{agent}/commands', [CommandController::class, 'index'])->name('commands.index');
+    Route::post('/agents/{agent}/commands', [CommandController::class, 'store'])->name('commands.store');
 });
 
 require __DIR__.'/auth.php';

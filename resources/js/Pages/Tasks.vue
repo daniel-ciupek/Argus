@@ -7,6 +7,7 @@ import { type PageProps } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { computed, watch } from 'vue';
+import { Play, Power, PowerOff, X } from '@lucide/vue';
 
 const props = defineProps<{
     tasks: TaskRow[];
@@ -62,6 +63,14 @@ function applyFilters(patch: Partial<{ status: string; agent: string }>): void {
 
 function formatDate(iso: string | null): string {
     return iso ? new Date(iso).toLocaleString('en-GB', { hour12: false }) : '—';
+}
+
+function sendTaskCommand(type: string, taskId: number, agentId: number): void {
+    router.post(
+        route('commands.store', agentId),
+        { type, payload: { task_id: taskId } },
+        { preserveScroll: true },
+    );
 }
 
 const selectClasses =
@@ -131,6 +140,7 @@ const selectClasses =
                             <th class="px-5 py-2.5 font-medium">{{ t('tasks.schedule') }}</th>
                             <th class="px-5 py-2.5 font-medium">{{ t('tasks.lastRun') }}</th>
                             <th class="px-5 py-2.5 font-medium">{{ t('tasks.nextRun') }}</th>
+                            <th class="px-5 py-2.5 text-right font-medium">{{ t('common.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-surface-100 dark:divide-surface-800/60">
@@ -151,6 +161,41 @@ const selectClasses =
                             <td class="px-5 py-3 font-mono text-surface-600 dark:text-surface-300">{{ task.schedule ?? '—' }}</td>
                             <td class="px-5 py-3 font-mono text-xs text-surface-500 dark:text-surface-400">{{ formatDate(task.last_run_at) }}</td>
                             <td class="px-5 py-3 font-mono text-xs text-surface-500 dark:text-surface-400">{{ formatDate(task.next_run_at) }}</td>
+                            <td class="px-5 py-3">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button
+                                        :title="t('commands.run')"
+                                        class="rounded p-1 text-surface-400 transition hover:bg-accent-50 hover:text-accent-600 dark:hover:bg-accent-950 dark:hover:text-accent-400"
+                                        @click="sendTaskCommand('task.run', task.id, task.agent_id)"
+                                    >
+                                        <Play class="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        v-if="task.status === 'pending' || task.status === 'failed'"
+                                        :title="t('commands.enable')"
+                                        class="rounded p-1 text-surface-400 transition hover:bg-success-50 hover:text-success-600 dark:hover:bg-success-950 dark:hover:text-success-400"
+                                        @click="sendTaskCommand('task.enable', task.id, task.agent_id)"
+                                    >
+                                        <Power class="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        v-if="task.status === 'running' || task.status === 'completed'"
+                                        :title="t('commands.disable')"
+                                        class="rounded p-1 text-surface-400 transition hover:bg-warning-50 hover:text-warning-600 dark:hover:bg-warning-950 dark:hover:text-warning-400"
+                                        @click="sendTaskCommand('task.disable', task.id, task.agent_id)"
+                                    >
+                                        <PowerOff class="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        v-if="task.status === 'running'"
+                                        :title="t('commands.cancel')"
+                                        class="rounded p-1 text-surface-400 transition hover:bg-danger-50 hover:text-danger-600 dark:hover:bg-danger-950 dark:hover:text-danger-400"
+                                        @click="sendTaskCommand('task.cancel', task.id, task.agent_id)"
+                                    >
+                                        <X class="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
