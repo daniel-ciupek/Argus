@@ -24,7 +24,6 @@ it('broadcasts EventReceived after ProcessEventJob handles', function (): void {
         'type' => 'log',
         'level' => 'info',
         'message' => 'Broadcast test',
-        'timestamp' => time(),
     ];
 
     $job = new ProcessEventJob($this->agent, $data);

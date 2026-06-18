@@ -26,7 +26,6 @@ class IngestTaskRequest extends FormRequest
             'schedule' => ['nullable', 'string', 'max:255'],
             'last_run_at' => ['nullable', 'date'],
             'next_run_at' => ['nullable', 'date'],
-            'timestamp' => ['required', 'integer'],
         ];
     }
 }

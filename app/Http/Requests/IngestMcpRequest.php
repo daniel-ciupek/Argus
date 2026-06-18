@@ -25,7 +25,6 @@ class IngestMcpRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::enum(McpStatus::class)],
             'meta' => ['nullable', 'array', new MaxJsonSize(16_384)],
-            'timestamp' => ['required', 'integer'],
         ];
     }
 }

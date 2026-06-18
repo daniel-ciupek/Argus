@@ -14,20 +14,26 @@ uses(RefreshDatabase::class);
 // ---------------------------------------------------------------------------
 function postIngestEvent(Agent $agent, array $payload): TestResponse
 {
+    $path = "/api/ingest/{$agent->slug}/events";
     $body = json_encode($payload);
-    $sig = 'sha256='.hash_hmac('sha256', $body, $agent->ingest_secret);
+    $ts = (string) time();
+    $canonical = implode("\n", ['POST', $path, $ts, $body]);
+    $sig = 'sha256='.hash_hmac('sha256', $canonical, $agent->ingest_secret);
 
     return test()->withoutMiddleware(ThrottleRequests::class)
-        ->postJson("/api/ingest/{$agent->slug}/events", $payload, ['X-Signature' => $sig]);
+        ->postJson($path, $payload, ['X-Signature' => $sig, 'X-Timestamp' => $ts]);
 }
 
 function postIngestMcp(Agent $agent, array $payload): TestResponse
 {
+    $path = "/api/ingest/{$agent->slug}/mcp";
     $body = json_encode($payload);
-    $sig = 'sha256='.hash_hmac('sha256', $body, $agent->ingest_secret);
+    $ts = (string) time();
+    $canonical = implode("\n", ['POST', $path, $ts, $body]);
+    $sig = 'sha256='.hash_hmac('sha256', $canonical, $agent->ingest_secret);
 
     return test()->withoutMiddleware(ThrottleRequests::class)
-        ->postJson("/api/ingest/{$agent->slug}/mcp", $payload, ['X-Signature' => $sig]);
+        ->postJson($path, $payload, ['X-Signature' => $sig, 'X-Timestamp' => $ts]);
 }
 
 function baseEventPayload(array $overrides = []): array
@@ -37,7 +43,6 @@ function baseEventPayload(array $overrides = []): array
         'level' => 'info',
         'message' => 'ok',
         'occurred_at' => now()->toIso8601String(),
-        'timestamp' => time(),
     ], $overrides);
 }
 
@@ -46,7 +51,6 @@ function baseMcpPayload(array $overrides = []): array
     return array_merge([
         'name' => 'test-mcp',
         'status' => 'connected',
-        'timestamp' => time(),
     ], $overrides);
 }
 

@@ -24,21 +24,18 @@ function makeUsagePayload(array $overrides = []): array
         'input_tokens' => 1000,
         'output_tokens' => 500,
         'occurred_at' => now()->toIso8601String(),
-        'timestamp' => time(),
     ], $overrides);
 }
 
-function signUsage(string $body, string $secret): string
+function usagePost(Agent $agent, array $payload, ?string $signature = null, ?string $timestamp = null): TestResponse
 {
-    return 'sha256='.hash_hmac('sha256', $body, $secret);
-}
-
-function usagePost(Agent $agent, array $payload, ?string $signature = null): TestResponse
-{
+    $path = "/api/ingest/{$agent->slug}/usage";
     $body = json_encode($payload);
-    $sig = $signature ?? signUsage($body, $agent->ingest_secret);
+    $ts = $timestamp ?? (string) time();
+    $canonical = implode("\n", ['POST', $path, $ts, $body]);
+    $sig = $signature ?? 'sha256='.hash_hmac('sha256', $canonical, $agent->ingest_secret);
 
-    return test()->postJson("/api/ingest/{$agent->slug}/usage", $payload, ['X-Signature' => $sig]);
+    return test()->postJson($path, $payload, ['X-Signature' => $sig, 'X-Timestamp' => $ts]);
 }
 
 beforeEach(function (): void {
@@ -76,8 +73,8 @@ it('rejects a usage request with an invalid signature', function (): void {
     Queue::assertNothingPushed();
 });
 
-it('rejects a usage request with an expired timestamp', function (): void {
-    usagePost($this->agent, makeUsagePayload(['timestamp' => time() - 400]))
+it('rejects a usage request with an expired X-Timestamp header', function (): void {
+    usagePost($this->agent, makeUsagePayload(), null, (string) (time() - 400))
         ->assertStatus(401)
         ->assertJson(['error' => 'Request timestamp is missing or too old (replay protection).']);
 });

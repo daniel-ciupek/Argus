@@ -17,25 +17,28 @@ function makePayload(array $overrides = []): array
         'message' => 'Test event',
         'payload' => ['key' => 'value'],
         'occurred_at' => now()->toIso8601String(),
-        'timestamp' => time(),
     ], $overrides);
 }
 
-function signPayload(string $body, string $secret): string
+/** Canonical HMAC: sha256(METHOD\nPATH\nTimestamp\nBODY, secret) */
+function signCanonical(string $method, string $path, string $timestamp, string $body, string $secret): string
 {
-    return 'sha256='.hash_hmac('sha256', $body, $secret);
+    $canonical = implode("\n", [$method, $path, $timestamp, $body]);
+
+    return 'sha256='.hash_hmac('sha256', $canonical, $secret);
 }
 
-function ingestPost(Agent $agent, array $payload, ?string $signature = null): TestResponse
+function ingestPost(Agent $agent, array $payload, ?string $signature = null, ?string $timestamp = null): TestResponse
 {
+    $path = "/api/ingest/{$agent->slug}/events";
     $body = json_encode($payload);
-    $sig = $signature ?? signPayload($body, $agent->ingest_secret);
+    $ts = $timestamp ?? (string) time();
+    $sig = $signature ?? signCanonical('POST', $path, $ts, $body, $agent->ingest_secret);
 
-    return test()->postJson(
-        "/api/ingest/{$agent->slug}/events",
-        $payload,
-        ['X-Signature' => $sig],
-    );
+    return test()->postJson($path, $payload, [
+        'X-Signature' => $sig,
+        'X-Timestamp' => $ts,
+    ]);
 }
 
 beforeEach(function (): void {
@@ -49,11 +52,7 @@ beforeEach(function (): void {
 it('accepts a valid signed request and dispatches job', function (): void {
     Queue::fake();
 
-    $payload = makePayload();
-    $body = json_encode($payload);
-    $sig = signPayload($body, $this->agent->ingest_secret);
-
-    $this->postJson("/api/ingest/{$this->agent->slug}/events", $payload, ['X-Signature' => $sig])
+    ingestPost($this->agent, makePayload())
         ->assertStatus(202)
         ->assertJson(['message' => 'Accepted.']);
 
@@ -63,58 +62,54 @@ it('accepts a valid signed request and dispatches job', function (): void {
 it('rejects a request with an invalid signature', function (): void {
     Queue::fake();
 
-    $payload = makePayload();
-
-    $this->postJson("/api/ingest/{$this->agent->slug}/events", $payload, ['X-Signature' => 'sha256=badhash'])
-        ->assertStatus(401)
-        ->assertJson(['error' => 'Invalid signature.']);
+    $this->postJson("/api/ingest/{$this->agent->slug}/events", makePayload(), [
+        'X-Signature' => 'sha256=badhash',
+        'X-Timestamp' => (string) time(),
+    ])->assertStatus(401)->assertJson(['error' => 'Invalid signature.']);
 
     Queue::assertNothingPushed();
 });
 
 it('rejects a request with a missing X-Signature header', function (): void {
-    $payload = makePayload();
-
-    $this->postJson("/api/ingest/{$this->agent->slug}/events", $payload)
-        ->assertStatus(401)
-        ->assertJson(['error' => 'Missing or malformed X-Signature header.']);
+    $this->postJson("/api/ingest/{$this->agent->slug}/events", makePayload(), [
+        'X-Timestamp' => (string) time(),
+    ])->assertStatus(401)->assertJson(['error' => 'Missing or malformed X-Signature header.']);
 });
 
 it('rejects a request with a malformed X-Signature header', function (): void {
-    $payload = makePayload();
-
-    $this->postJson("/api/ingest/{$this->agent->slug}/events", $payload, ['X-Signature' => 'not-sha256-format'])
-        ->assertStatus(401)
-        ->assertJson(['error' => 'Missing or malformed X-Signature header.']);
+    $this->postJson("/api/ingest/{$this->agent->slug}/events", makePayload(), [
+        'X-Signature' => 'not-sha256-format',
+        'X-Timestamp' => (string) time(),
+    ])->assertStatus(401)->assertJson(['error' => 'Missing or malformed X-Signature header.']);
 });
 
-it('rejects a request with an expired timestamp (replay attack)', function (): void {
-    $payload = makePayload(['timestamp' => time() - 400]);
+it('rejects a request with a missing X-Timestamp header', function (): void {
+    $payload = makePayload();
     $body = json_encode($payload);
-    $sig = signPayload($body, $this->agent->ingest_secret);
+    $sig = signCanonical('POST', "/api/ingest/{$this->agent->slug}/events", '', $body, $this->agent->ingest_secret);
 
-    $this->postJson("/api/ingest/{$this->agent->slug}/events", $payload, ['X-Signature' => $sig])
+    $this->postJson("/api/ingest/{$this->agent->slug}/events", $payload, [
+        'X-Signature' => $sig,
+    ])->assertStatus(401)->assertJson(['error' => 'Request timestamp is missing or too old (replay protection).']);
+});
+
+it('rejects a request with an expired X-Timestamp (replay attack)', function (): void {
+    ingestPost($this->agent, makePayload(), null, (string) (time() - 400))
         ->assertStatus(401)
         ->assertJson(['error' => 'Request timestamp is missing or too old (replay protection).']);
 });
 
-it('rejects a request with a future timestamp beyond drift window', function (): void {
-    $payload = makePayload(['timestamp' => time() + 400]);
-    $body = json_encode($payload);
-    $sig = signPayload($body, $this->agent->ingest_secret);
-
-    $this->postJson("/api/ingest/{$this->agent->slug}/events", $payload, ['X-Signature' => $sig])
+it('rejects a request with a future X-Timestamp beyond drift window', function (): void {
+    ingestPost($this->agent, makePayload(), null, (string) (time() + 400))
         ->assertStatus(401)
         ->assertJson(['error' => 'Request timestamp is missing or too old (replay protection).']);
 });
 
 it('returns 404 for an unknown agent slug', function (): void {
-    $payload = makePayload();
-    $body = json_encode($payload);
-    $sig = signPayload($body, 'any-secret');
-
-    $this->postJson('/api/ingest/nonexistent-agent/events', $payload, ['X-Signature' => $sig])
-        ->assertStatus(404);
+    $this->postJson('/api/ingest/nonexistent-agent/events', makePayload(), [
+        'X-Signature' => 'sha256=anything',
+        'X-Timestamp' => (string) time(),
+    ])->assertStatus(404);
 });
 
 it('processes the event job and saves event to database', function (): void {
@@ -134,11 +129,7 @@ it('processes the event job and saves event to database', function (): void {
 });
 
 it('validates required fields and returns 422 on invalid input', function (): void {
-    $payload = makePayload(['type' => 'invalid-type']);
-    $body = json_encode($payload);
-    $sig = signPayload($body, $this->agent->ingest_secret);
-
-    $this->postJson("/api/ingest/{$this->agent->slug}/events", $payload, ['X-Signature' => $sig])
+    ingestPost($this->agent, makePayload(['type' => 'invalid-type']))
         ->assertStatus(422)
         ->assertJsonValidationErrors(['type']);
 });

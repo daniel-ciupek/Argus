@@ -20,16 +20,18 @@ function makeTaskPayload(array $overrides = []): array
         'schedule' => '0 8 * * *',
         'last_run_at' => now()->subHour()->toIso8601String(),
         'next_run_at' => now()->addHour()->toIso8601String(),
-        'timestamp' => time(),
     ], $overrides);
 }
 
 function taskPost(Agent $agent, array $payload, ?string $signature = null): TestResponse
 {
+    $path = "/api/ingest/{$agent->slug}/tasks";
     $body = json_encode($payload);
-    $sig = $signature ?? 'sha256='.hash_hmac('sha256', $body, $agent->ingest_secret);
+    $ts = (string) time();
+    $canonical = implode("\n", ['POST', $path, $ts, $body]);
+    $sig = $signature ?? 'sha256='.hash_hmac('sha256', $canonical, $agent->ingest_secret);
 
-    return test()->postJson("/api/ingest/{$agent->slug}/tasks", $payload, ['X-Signature' => $sig]);
+    return test()->postJson($path, $payload, ['X-Signature' => $sig, 'X-Timestamp' => $ts]);
 }
 
 beforeEach(function (): void {

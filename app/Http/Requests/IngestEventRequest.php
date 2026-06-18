@@ -27,7 +27,6 @@ class IngestEventRequest extends FormRequest
             'message' => ['required', 'string', 'max:2000'],
             'payload' => ['nullable', 'array', new MaxJsonSize(65_536)],
             'occurred_at' => ['nullable', 'date'],
-            'timestamp' => ['required', 'integer'],
         ];
     }
 }

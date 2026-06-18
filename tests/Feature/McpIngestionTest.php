@@ -18,16 +18,18 @@ function makeMcpPayload(array $overrides = []): array
         'name' => 'filesystem',
         'status' => 'connected',
         'meta' => ['root' => '/home/agent'],
-        'timestamp' => time(),
     ], $overrides);
 }
 
 function mcpPost(Agent $agent, array $payload, ?string $signature = null): TestResponse
 {
+    $path = "/api/ingest/{$agent->slug}/mcp";
     $body = json_encode($payload);
-    $sig = $signature ?? 'sha256='.hash_hmac('sha256', $body, $agent->ingest_secret);
+    $ts = (string) time();
+    $canonical = implode("\n", ['POST', $path, $ts, $body]);
+    $sig = $signature ?? 'sha256='.hash_hmac('sha256', $canonical, $agent->ingest_secret);
 
-    return test()->postJson("/api/ingest/{$agent->slug}/mcp", $payload, ['X-Signature' => $sig]);
+    return test()->postJson($path, $payload, ['X-Signature' => $sig, 'X-Timestamp' => $ts]);
 }
 
 beforeEach(function (): void {

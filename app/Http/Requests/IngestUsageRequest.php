@@ -37,7 +37,6 @@ class IngestUsageRequest extends FormRequest
                 Rule::exists('tasks', 'id')->where('agent_id', $agent->id),
             ],
             'occurred_at' => ['nullable', 'date'],
-            'timestamp' => ['required', 'integer'],
         ];
     }
 

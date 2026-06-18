@@ -11,21 +11,19 @@ use Illuminate\Testing\TestResponse;
 // ---------------------------------------------------------------------------
 function ingestEvent(Agent $agent): TestResponse
 {
+    $path = "/api/ingest/{$agent->slug}/events";
     $payload = [
         'type' => 'log',
         'level' => 'info',
         'message' => 'rate-limit probe',
         'occurred_at' => now()->toIso8601String(),
-        'timestamp' => time(),
     ];
     $body = json_encode($payload);
-    $sig = 'sha256='.hash_hmac('sha256', $body, $agent->ingest_secret);
+    $ts = (string) time();
+    $canonical = implode("\n", ['POST', $path, $ts, $body]);
+    $sig = 'sha256='.hash_hmac('sha256', $canonical, $agent->ingest_secret);
 
-    return test()->postJson(
-        "/api/ingest/{$agent->slug}/events",
-        $payload,
-        ['X-Signature' => $sig],
-    );
+    return test()->postJson($path, $payload, ['X-Signature' => $sig, 'X-Timestamp' => $ts]);
 }
 
 uses(RefreshDatabase::class);
